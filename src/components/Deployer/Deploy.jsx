@@ -1,0 +1,1 @@
+// Interface to deploy the main contract

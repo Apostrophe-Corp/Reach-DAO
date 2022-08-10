@@ -1,0 +1,1 @@
+// Interface to show that the contract has been deployed and also to display the contract info string

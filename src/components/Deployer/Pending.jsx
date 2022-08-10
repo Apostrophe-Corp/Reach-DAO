@@ -1,0 +1,1 @@
+// Interface to show that the proposal is being processed, which means a contract is being created for the proposal and a contract info string is being generated

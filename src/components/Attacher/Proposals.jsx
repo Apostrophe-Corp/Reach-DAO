@@ -1,0 +1,1 @@
+// Interface to display all the proposals with their links

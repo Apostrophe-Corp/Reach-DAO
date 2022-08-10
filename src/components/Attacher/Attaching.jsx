@@ -1,0 +1,1 @@
+// Interface to shoe that the attachment is currently in progress
