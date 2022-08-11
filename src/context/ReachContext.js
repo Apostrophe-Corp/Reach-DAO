@@ -22,7 +22,9 @@ const ReachContextProvider = ({ children }) => {
     const [defaults] = useState({
         defaultFundAmt: "10",
         defaultContribution: "1",
+        defaultTokenSupply: 1000000000,
         standardUnit,
+
     });
     const [views, setViews] = useState({
         view: "ConnectAccount",
@@ -32,13 +34,13 @@ const ReachContextProvider = ({ children }) => {
         account: "",
         balance: "",
     });
-    const token = reach.launchToken(user.account, 'REACHTOKEN', 'RSH', { supply: 1000000 });
-    const tokenID = token.id;
 
+    const [contract, setContract] = useState(null);
+    const [deadline, setDeadline] = useState(defaultDeadline);
     const [contribution, setContribution] = useState(defaults.defaultContribution);
     const [resolveContribution, setResolveContribution] = useState({});
-    const [contract, setContract] = useState(null);
-    const [deadline, setDeadline] = useState({ ...defaultDeadline });
+    const [tokenID, setTokenID] = useState(null);
+    const [tokenSupply, setTokenSupply] = useState(defaults.defaultTokenSupply);
 
     const connectAccount = async () => {
         const account = await reach.getDefaultAccount();
@@ -77,6 +79,8 @@ const ReachContextProvider = ({ children }) => {
     };
 
     const deploy = async () => {
+        const token = reach.launchToken(user.account, 'REACHTOKEN', 'RSH', { supply: tokenSupply });
+        setTokenID(token.id);
         const ctc = user.account.contract(backend);
         setViews({ view: "Deploying" });
         ctc.p.Deployer(DeployerInteract);
@@ -86,10 +90,19 @@ const ReachContextProvider = ({ children }) => {
         setViews({ view: "Confirmed" });
     };
 
-    const DeployerInteract = {
-        ...commonInteract,
-        deploy,
-        deadline,
+    const stake = async (num) => {
+        const [amt, amtOfTokens] = await reach.balancesOf(user.account, [null, tokenID]);
+        if (amtOfTokens && amtOfTokens >= num) {
+            const ctc = user.account.contract(backend, contract);
+            try {
+                await ctc.apis.Proposer.stake(num);
+                setViews({ view: "Confirmed", wrapper: "DeployerWrapper" });
+            } catch (error) {
+                alert("Sorry your staking could not be processed...");
+            }
+        } else {
+            alert(`Sorry the amount of tokens you own is not sufficient...\n \nYou currently have ${reach.formatCurrency(amt)} ${standardUnit} and ${amtOfTokens} Reach Token${amtOfTokens > 1 ? 's' : ''}.`);
+        }
     };
 
     const makeProposal = async ({ networkName = "ETH", blocks = 10 }) => {
@@ -145,9 +158,6 @@ const ReachContextProvider = ({ children }) => {
 
     const attach = async (ctcInfoStr) => {
         try {
-            console.log(ctcInfoStr);
-            console.log(user.account);
-            console.log(JSON.parse(ctcInfoStr));
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
             setViews({ view: "Attaching", wrapper: "AttacherWrapper" });
             ctc.p.Attacher(AttacherInteract);
@@ -181,10 +191,13 @@ const ReachContextProvider = ({ children }) => {
         setViews({ views: 'Confirmed', wrapper: 'ProposalWrapper' });
     };
 
+    const DeployerInteract = {
+        ...commonInteract,
+        deadline,
+    };
+
     const AttacherInteract = {
         ...commonInteract,
-        attach,
-        makeProposal,
     };
 
     const ReachContextValues = {
@@ -200,13 +213,20 @@ const ReachContextProvider = ({ children }) => {
         fundAccount,
         connectAccount,
         skipFundAccount,
+        tokenID,
+        setTokenID,
+        tokenSupply,
+        setTokenSupply,
+        deploy,
 
         // Participants
         selectDeployer,
         selectAttacher,
 
         // Deployer
-        deploy,
+        stake,
+
+
 
         // Attacher  
         attach,
