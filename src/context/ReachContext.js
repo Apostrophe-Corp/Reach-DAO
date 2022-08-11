@@ -14,7 +14,7 @@ reach.setWalletFallback(
 );
 
 const { standardUnit } = reach;
-const defaultDeadline = { ETH: 10, ALGO: 100, CFX: 1000 }[reach.connector];
+const defaultDeadline = { ETH: 1000, ALGO: 10000, CFX: 100000 }[reach.connector];
 
 export const ReachContext = React.createContext();
 
