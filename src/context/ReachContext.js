@@ -14,6 +14,7 @@ reach.setWalletFallback(
 );
 
 const { standardUnit } = reach;
+const defaultDeadline = { ETH: 10, ALGO: 100, CFX: 1000 }[reach.connector];
 
 export const ReachContext = React.createContext();
 
@@ -31,12 +32,13 @@ const ReachContextProvider = ({ children }) => {
         account: "",
         balance: "",
     });
+    const token = reach.launchToken(user.account, 'REACHTOKEN', 'RSH', { supply: 1000000 });
+    const tokenID = token.id;
+
     const [contribution, setContribution] = useState(defaults.defaultContribution);
-
+    const [resolveContribution, setResolveContribution] = useState({});
     const [contract, setContract] = useState(null);
-
-    const [resolveVote, setResolveVote] = useState({});
-    const [vote, setVote] = useState(null);
+    const [deadline, setDeadline] = useState({ ...defaultDeadline });
 
     const connectAccount = async () => {
         const account = await reach.getDefaultAccount();
@@ -54,7 +56,7 @@ const ReachContextProvider = ({ children }) => {
     };
 
     const fundAccount = async (fundAmount) => {
-        await reach.fundFromFaucet(user.account, reach.parseCurrency(fundAmount));
+        await reach.fundFromFaucet(user.account, reach.parseCurrency(fundAmount ?? defaults.defaultFundAmt));
         setViews({ views: "DeployerOrAttacher" });
     };
 
@@ -62,7 +64,7 @@ const ReachContextProvider = ({ children }) => {
         setViews({ view: "DeployerOrAttacher", wrapper: "AppWrapper" });
     };
 
-    const selectAPI = () => {
+    const selectAttacher = () => {
         setViews({ wrapper: "AttacherWrapper", view: "Attach" });
     };
 
@@ -70,19 +72,159 @@ const ReachContextProvider = ({ children }) => {
         setViews({ wrapper: "DeployerWrapper", view: "MakeProposal" });
     };
 
-    const makeProposal = async () => {
-        // TODO implement the interact functionality
+    const commonInteract = {
+        ...reach.hasRandom
     };
 
-    const contribute = async () => {
-        // TODO implement the API call functionality
+    const deploy = async () => {
+        const ctc = user.account.contract(backend);
+        setViews({ view: "Deploying" });
+        ctc.p.Deployer(DeployerInteract);
+        const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
+        console.log(ctcInfoStr);
+        setContract({ ctcInfoStr });
+        setViews({ view: "Confirmed" });
     };
 
-    const approveProposal = async () => {
-        // TODO optional
+    const DeployerInteract = {
+        ...commonInteract,
+        deploy,
+        deadline,
     };
 
-    // Still in progress....
+    const makeProposal = async ({ networkName = "ETH", blocks = 10 }) => {
+        const proposalSetup = async () => {
+            // TODO implement the interact functionality
+            /**
+             * Plans to set a deadline for a proposal upon creation
+             * Although it may seem a deadline is would be kinda tricky to implement
+             * */
+            const makeDeadline = ({ network = networkName, value = blocks }) => {
+                const deadline = {};
+                const VALUE = Math.round(value);
+                switch (network) {
+                    case "ETH":
+                        deadline['ETH'] = VALUE;
+                        deadline['ALGO'] = VALUE * 10;
+                        deadline['CFX'] = VALUE * 100;
+                        break;
+                    case "ALGO":
+                        deadline['ETH'] = VALUE / 10;
+                        deadline['ALGO'] = VALUE;
+                        deadline['CFX'] = VALUE * 10;
+                        break;
+                    case "CFX":
+                        deadline['ETH'] = VALUE / 100;
+                        deadline['ALGO'] = VALUE / 10;
+                        deadline['CFX'] = VALUE;
+                        break;
+                    default:
+                        deadline['ETH'] = VALUE;
+                        deadline['ALGO'] = VALUE * 10;
+                        deadline['CFX'] = VALUE * 100;
+                        break;
+                }
+
+                return deadline;
+            };
+
+            setDeadline(makeDeadline({})[reach.connect]);
+            const ctc = user.account.contract(backend);
+            setViews({ view: "Deploying" });
+            ctc.p.Deployer(DeployerInteract);
+            const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
+            console.log(ctcInfoStr);
+            // The contract string should at this point be sent to a server for safe keeping to be attached to at a later date on a random user's device
+            setContract({ ctcInfoStr });
+            setViews({ view: "Confirmed" });
+        };
+
+        setViews({ view: "Loading" });
+        await proposalSetup();
+    };
+
+    const attach = async (ctcInfoStr) => {
+        try {
+            console.log(ctcInfoStr);
+            console.log(user.account);
+            console.log(JSON.parse(ctcInfoStr));
+            const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
+            setViews({ view: "Attaching", wrapper: "AttacherWrapper" });
+            ctc.p.Attacher(AttacherInteract);
+        } catch (error) {
+            console.log({ error });
+        }
+    };
+
+    const connectAndContribute = async () => {
+        try {
+            await user.account.tokenAccept(tokenID);
+            setViews({ view: "Loading", wrapper: 'APIWrapper' });
+            const ctc = user.account.contract(backend, JSON.parse(contract));
+            setViews({ view: 'Contribute', wrapper: 'APIWrapper' });
+            return await new Promise(resolveContribution => {
+                setResolveContribution({ resolveContribution });
+                ctc.apis.Contributor.contribute(contribution);
+                setViews({ views: 'PendingConfirmation', wrapper: 'APIWrapper' });
+            });
+        } catch (error) {
+            console.log({ error });
+        }
+    };
+
+    const makeContribution = async (x) => {
+        setContribution(x);
+    };
+
+    const confirmContribution = async () => {
+        resolveContribution.resolveContribution();
+        setViews({ views: 'Confirmed', wrapper: 'APIWrapper' });
+    };
+
+    const AttacherInteract = {
+        ...commonInteract,
+        attach,
+        makeProposal,
+    };
+
+    const ReachContextValues = {
+        ...defaults,
+
+        contract,
+        deadline,
+
+        // Accounts
+        user,
+        views,
+        fundAccount,
+        connectAccount,
+        skipFundAccount,
+
+        // Participants
+        selectDeployer,
+        selectAttacher,
+
+        // Deployer
+        deploy,
+
+        // Attacher  
+        attach,
+        makeProposal,
+        // termsAccepted, implement a mutual agreement window
+
+        // API
+        connectAndContribute,
+        makeContribution,
+        confirmContribution,
+    };
+
+    return (
+        <ReachContext.Provider values={ ReachContextValues }>
+            { children }
+        </ReachContext.Provider>
+    );
 };
+
+export default ReachContextProvider;
 
 // Still in progress....
