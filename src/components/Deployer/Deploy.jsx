@@ -18,3 +18,5 @@ const Deploy = () => {
         </div>
     );
 };
+
+export default Deploy;
