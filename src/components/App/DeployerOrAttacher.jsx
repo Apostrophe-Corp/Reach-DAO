@@ -20,4 +20,4 @@ const DeployerOrAttacher = () => {
     );
 };
 
-return default DeployerOrAttacher;
+export default DeployerOrAttacher;

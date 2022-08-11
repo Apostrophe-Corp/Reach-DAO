@@ -159,13 +159,13 @@ const ReachContextProvider = ({ children }) => {
     const connectAndContribute = async () => {
         try {
             await user.account.tokenAccept(tokenID);
-            setViews({ view: "Loading", wrapper: 'APIWrapper' });
+            setViews({ view: "Loading", wrapper: 'ProposalWrapper' });
             const ctc = user.account.contract(backend, JSON.parse(contract));
-            setViews({ view: 'Contribute', wrapper: 'APIWrapper' });
+            setViews({ view: 'Contribute', wrapper: 'ProposalWrapper' });
             return await new Promise(resolveContribution => {
                 setResolveContribution({ resolveContribution });
                 ctc.apis.Contributor.contribute(contribution);
-                setViews({ views: 'PendingConfirmation', wrapper: 'APIWrapper' });
+                setViews({ views: 'PendingConfirmation', wrapper: 'ProposalWrapper' });
             });
         } catch (error) {
             console.log({ error });
@@ -178,7 +178,7 @@ const ReachContextProvider = ({ children }) => {
 
     const confirmContribution = async () => {
         resolveContribution.resolveContribution();
-        setViews({ views: 'Confirmed', wrapper: 'APIWrapper' });
+        setViews({ views: 'Confirmed', wrapper: 'ProposalWrapper' });
     };
 
     const AttacherInteract = {
@@ -196,6 +196,7 @@ const ReachContextProvider = ({ children }) => {
         // Accounts
         user,
         views,
+        setViews,
         fundAccount,
         connectAccount,
         skipFundAccount,

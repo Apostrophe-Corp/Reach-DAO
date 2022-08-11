@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useReach } from "../../hooks/useReach";
 
 const FundAccount = () => {
-    const { user, standardUnit, defaultFundAmt, skipFundAccount } = useReach();
+    const { user, standardUnit, defaultFundAmt, fundAccount, skipFundAccount } = useReach();
     const [amount, setAmount] = useState({ amt: defaultFundAmt });
 
     return (
@@ -13,10 +13,16 @@ const FundAccount = () => {
             <hr />
             Would you like to fund your account with additional { standardUnit }?
             <br />
-            (This only works on a devnets)
-            <input 
-            type='number'
-            
+            (This only works on certain DevNets)
+            <input
+                type='number'
+                placeholder={ defaultFundAmt }
+                onChange={ (e) => setAmount({ amt: e.currentTarget.value }) }
+            />
+            <button onClick={ () => fundAccount(amount) }>Fund Amount</button>
+            <button onClick={ () => skipFundAccount() }>Skip</button>
         </div>
     );
 };
+
+export default FundAccount;
