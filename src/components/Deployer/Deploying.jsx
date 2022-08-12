@@ -1,1 +1,7 @@
-// Interface to indicate the contract is being deployed
+import React from "react";
+
+const Deploying = () => {
+    return <div>Deploying... please wait.</div>;
+};
+
+export default Deploying;

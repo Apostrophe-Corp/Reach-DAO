@@ -41,6 +41,62 @@ const ReachContextProvider = ({ children }) => {
     const [resolveContribution, setResolveContribution] = useState({});
     const [tokenID, setTokenID] = useState(null);
     const [tokenSupply, setTokenSupply] = useState(defaults.defaultTokenSupply);
+    const [proposals, setProposals] = useState([
+        {
+            id: 1,
+            title: 'Proposal 1',
+            link: 'https://github.com/Aro1914/AroTable/blob/main/README.md',
+            staked: 100,
+            description: `A self-sorting number data structure`,
+            owner: 'https://github.com/Aro1914',
+            contract: "someContractString",
+        },
+        {
+            id: 2,
+            title: 'Proposal 2',
+            link: 'https://github.com/Aro1914/Coffee-Shop/blob/main/README.md',
+            staked: 100,
+            description: `Not your regular coffee shop`,
+            owner: 'https://github.com/Aro1914',
+            contract: "someContractString",
+        },
+        {
+            id: 3,
+            title: 'Proposal 3',
+            link: 'https://github.com/Aro1914/Trivia-API/blob/main/README.md',
+            staked: 100,
+            description: `A quiz API`,
+            owner: 'https://github.com/Aro1914',
+            contract: "someContractString",
+        },
+        {
+            id: 4,
+            title: 'Proposal 4',
+            link: 'https://github.com/Aro1914/Fyyur-Project/blob/main/README.md',
+            staked: 100,
+            description: `A platform for musical artists to book musical venues`,
+            owner: 'https://github.com/Aro1914',
+            contract: "someContractString",
+        },
+        {
+            id: 5,
+            title: 'Proposal 5',
+            link: 'https://github.com/Aro1914/Rock-Paper-Scissors-with-Reach/blob/main/README.md',
+            staked: 100,
+            description: `An implementation of the fun but sometimes intense game of Rock, Paper, Scissors`,
+            owner: 'https://github.com/Aro1914',
+            contract: "someContractString",
+        },
+        {
+            id: 6,
+            title: 'Proposal 6',
+            link: 'https://github.com/AroTable-For-Server-Side/AroTable/blob/main/README.md',
+            staked: 100,
+            description: `A self-sorting number data structure (For Server Side)`,
+            owner: 'https://github.com/Aro1914',
+            contract: "someContractString",
+        },
+    ]);
 
     const connectAccount = async () => {
         const account = await reach.getDefaultAccount();
@@ -51,7 +107,7 @@ const ReachContextProvider = ({ children }) => {
             balance
         });
         if (await reach.canFundFromFaucet()) {
-            setViews({ view: "FundAccount" });
+            setViews({ view: "FundAccount", wrapper: "AppWrapper" });
         } else {
             setViews({ view: "DeployerOrAttacher", wrapper: "AppWrapper" });
         }
@@ -59,7 +115,7 @@ const ReachContextProvider = ({ children }) => {
 
     const fundAccount = async (fundAmount) => {
         await reach.fundFromFaucet(user.account, reach.parseCurrency(fundAmount ?? defaults.defaultFundAmt));
-        setViews({ views: "DeployerOrAttacher" });
+        setViews({ views: "DeployerOrAttacher", wrapper: "AppWrapper" });
     };
 
     const skipFundAccount = async () => {
@@ -67,11 +123,11 @@ const ReachContextProvider = ({ children }) => {
     };
 
     const selectAttacher = () => {
-        setViews({ wrapper: "AttacherWrapper", view: "Attach" });
+        setViews({ view: "Attach", wrapper: "AttacherWrapper" });
     };
 
     const selectDeployer = () => {
-        setViews({ wrapper: "DeployerWrapper", view: "MakeProposal" });
+        setViews({ view: "Deploy", wrapper: "DeployerWrapper" });
     };
 
     const commonInteract = {
@@ -79,6 +135,7 @@ const ReachContextProvider = ({ children }) => {
     };
 
     const deploy = async () => {
+        setViews({ view: "Deploying", wrapper: "DeployerWrapper" });
         const token = reach.launchToken(user.account, 'REACHTOKEN', 'RSH', { supply: tokenSupply });
         setTokenID(token.id);
         const ctc = user.account.contract(backend);
@@ -93,7 +150,7 @@ const ReachContextProvider = ({ children }) => {
     const stake = async (num) => {
         const [amt, amtOfTokens] = await reach.balancesOf(user.account, [null, tokenID]);
         if (amtOfTokens && amtOfTokens >= num) {
-            const ctc = user.account.contract(backend, contract);
+            const ctc = user.account.contract(backend, contract.ctcInfoStr);
             try {
                 await ctc.apis.Proposer.stake(num);
                 setViews({ view: "Confirmed", wrapper: "DeployerWrapper" });
@@ -143,7 +200,7 @@ const ReachContextProvider = ({ children }) => {
 
             setDeadline(makeDeadline({})[reach.connect]);
             const ctc = user.account.contract(backend);
-            setViews({ view: "Deploying" });
+            setViews({ view: "Deploying", wrapper: "ProposalWrapper" });
             ctc.p.Deployer(DeployerInteract);
             const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
             console.log(ctcInfoStr);
@@ -155,6 +212,10 @@ const ReachContextProvider = ({ children }) => {
         setViews({ view: "Loading" });
         await proposalSetup();
     };
+
+    // const timeoutProposal () => {
+    // This will delete the timeoutProposal from the database or global state
+    // }
 
     const attach = async (ctcInfoStr) => {
         try {
@@ -169,8 +230,8 @@ const ReachContextProvider = ({ children }) => {
     const connectAndContribute = async () => {
         try {
             await user.account.tokenAccept(tokenID);
-            setViews({ view: "Loading", wrapper: 'ProposalWrapper' });
-            const ctc = user.account.contract(backend, JSON.parse(contract));
+            setViews({ view: "Attaching", wrapper: 'ProposalWrapper' });
+            const ctc = user.account.contract(backend, JSON.parse(contract.ctcInfoStr));
             setViews({ view: 'Contribute', wrapper: 'ProposalWrapper' });
             return await new Promise(resolveContribution => {
                 setResolveContribution({ resolveContribution });
@@ -203,13 +264,16 @@ const ReachContextProvider = ({ children }) => {
     const ReachContextValues = {
         ...defaults,
 
+        // Views
+        views,
+        setViews,
+
+        // Misc
         contract,
         deadline,
 
         // Accounts
         user,
-        views,
-        setViews,
         fundAccount,
         connectAccount,
         skipFundAccount,
@@ -225,18 +289,20 @@ const ReachContextProvider = ({ children }) => {
 
         // Deployer
         stake,
-
-
+        // timeoutProposal
 
         // Attacher  
         attach,
         makeProposal,
-        // termsAccepted, implement a mutual agreement window
 
         // API
         connectAndContribute,
         makeContribution,
         confirmContribution,
+
+        // Proposals
+        proposals,
+        setProposals,
     };
 
     return (
