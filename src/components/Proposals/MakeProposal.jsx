@@ -20,7 +20,7 @@ const MakeProposal = () => {
     const makeAndUpdateProposals = () => {
         makeProposal(inputs.network, inputs.deadline);
         setProposals([...proposals, {
-            id: proposals.reduce((a, b) => a > b ? a : b) + 1,
+            id: proposals.reduce((a, b) => a.id > b.id ? a.id : b.id) + 1,
             title: inputs['title'],
             link: inputs['link'],
             staked: inputs['staked'],
