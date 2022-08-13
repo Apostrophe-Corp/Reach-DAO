@@ -5,8 +5,8 @@
  * @params m A value of type Maybe, usually returned when you try to retrieve data from a Map, this is because the value being referenced may not have been stored yet
  * @returns The indented value if it does exist in the Map, if not returns null
  */
+// eslint-disable-next-line no-undef
 const getDataFromMap = m => fromMaybe(m, (() => null), ((x) => x));
-
 /**
  * common Interact{
  * ...hasRandom,
@@ -24,7 +24,6 @@ const getDataFromMap = m => fromMaybe(m, (() => null), ((x) => x));
  * ...common,
  * }
  */
-
 /**
  * APIs
  * Proposer
