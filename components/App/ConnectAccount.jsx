@@ -1,16 +1,16 @@
 import React from 'react';
-import { useReach, useClasses } from "../../hooks";
+import { useReach, fmtClasses } from "../../hooks";
 import styles from "../../styles/Shared.module.css";
 
 const ConnectAccount = () => {
     const { connectAccount } = useReach();
     return (
-        <div className={ useClasses(styles.container, styles.flex, styles.itemsCenter) }>
-            <p className={ useClasses(styles.infoText) } >
-                Click the button below to connect to your MyAlgo Connect account. If this takes more than a few seconds, there may be something wrong.
+        <div className={ fmtClasses(styles.container, styles.flex, styles.itemsCenter) }>
+            <p className={ fmtClasses(styles.infoText) } >
+                Click the button below to connect to your wallet. If this takes more than a few seconds, there may be something wrong.
             </p>
-            <div className={ useClasses(styles.flex, styles.flat, styles.itemsCenter, styles.widthMax) }>
-                <button onClick={ connectAccount } className={ useClasses(styles.actionButton) }>Connect Algo Wallet</button>
+            <div className={ fmtClasses(styles.flex, styles.flat, styles.itemsCenter, styles.widthMax) }>
+                <button onClick={ connectAccount } className={ fmtClasses(styles.actionButton) }>Connect my wallet</button>
             </div>
         </div>
     );

@@ -1,2 +1,2 @@
 export { useReach } from "./useReach";
-export { useClasses } from "./useClasses";
+export { fmtClasses } from "./fmtClasses";

@@ -102,6 +102,10 @@
   width: 100% !important;
 }
 
+.widthFitContent {
+  width: fit-content !important;
+}
+
 .info {
   font-weight: 500;
   font-size: 18px;
@@ -190,4 +194,8 @@
   color: var(--themeText);
   border-radius: 5px;
   outline: none;
+}
+
+.width70 {
+  width: 70% !important;
 }

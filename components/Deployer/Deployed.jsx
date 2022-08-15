@@ -1,5 +1,5 @@
 import React from "react";
-import { useReach, useClasses } from "../../hooks";
+import { useReach, fmtClasses } from "../../hooks";
 import styles from "../../styles/Shared.module.css";
 
 const sleep = (milliseconds) =>
@@ -9,8 +9,8 @@ const Deployed = () => {
     const { contract } = useReach();
 
     const copyToClipboard = async (button) => {
-        // navigator.clipboard.writeText(contract.ctcInfoStr);
-        navigator.clipboard.writeText("Some Contract Info");
+        navigator.clipboard.writeText(contract.ctcInfoStr);
+        // navigator.clipboard.writeText("Some Contract Info");
         const origInnerHTML = button.innerHTML;
         button.innerHTML = "Copied!";
         button.disabled = true;
@@ -20,23 +20,30 @@ const Deployed = () => {
     };
 
     return (
-        <div className={ useClasses(styles.container, styles.itemsCenter) }>
-            <h1 className={ useClasses(styles.infoText) }>Dapp deployed!
+        <div className={ fmtClasses(styles.container, styles.itemsCenter) }>
+            <h1 className={ fmtClasses(styles.infoText) }>DApp deployed!
             </h1>
-            <h2 className={ useClasses(styles.infoText, styles.widthMax) }>Please distribute this contract info, for other individuals to attach</h2>
-            <pre className={ useClasses(
+            <h2 className={ fmtClasses(styles.infoText, styles.widthMax) }>Please distribute this contract info, for other individuals to attach</h2>
+            <pre className={ fmtClasses(
                 styles.field,
-                styles.widthMax,
+                styles.widthFitContent,
             ) }>
-                {/* { contract.ctcInfoStr } */ }
-                { "Some Contract Info" }
+                { contract.ctcInfoStr }
+                {/* { "Some Contract Info" } */}
             </pre>
-            <button className={ useClasses(
-                styles.actionButton,
-                styles.copyButton,
-            ) } onClick={ (e) => copyToClipboard(e.currentTarget) }>
-                Copy to clipboard
-            </button>
+            <div className={fmtClasses(
+                styles.container,
+                styles.flex,
+                styles.itemsCenter,
+                styles.widthMax,
+            )}>
+                <button className={ fmtClasses(
+                    styles.actionButton,
+                    styles.copyButton,
+                ) } onClick={ (e) => copyToClipboard(e.currentTarget) }>
+                    Copy to clipboard
+                </button>
+            </div>
         </div>
     );
 };

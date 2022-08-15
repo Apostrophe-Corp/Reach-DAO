@@ -1,3 +1,5 @@
+/* eslint-disable eqeqeq */
+/* eslint-disable no-undef */
 'reach 0.1';
 
 const [isOutcome, NOT_PASSED, PASSED] = makeEnum(2);
@@ -45,6 +47,18 @@ export const main = Reach.App(() => {
         })], Bool)
     });
 
+    /**
+     *  const Proposers = API('Proposers', {
+        makeProposal: Fun([Object({
+            title: Bytes(48),
+            link: Bytes(128),
+            description: Bytes(200),
+            owner: Bytes(128),
+            contract: Contract,
+        })], Bool)
+    });
+     */
+
     const Voters = API('Voters', {
         vote: Fun([Bool], Bool),
         // interact interface 
@@ -52,6 +66,19 @@ export const main = Reach.App(() => {
     init();
 
     Deployer.publish();
+
+    const count = parallelReduce(0)
+        .invariant(balance() == 0)
+        .while(true)
+        .api(Voters.vote, (truthy, notify) => {
+            notify(true);
+            return count;
+        })
+        .api(Proposers.makeProposal, (object, notify) => {
+            notify(true);
+            return count;
+        });
+
     commit();
 
 });

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Select from "react-select";
 import 'bootstrap/dist/css/bootstrap.css';
-import { useClasses, useReach } from "../../hooks";
+import { fmtClasses, useReach } from "../../hooks";
 
 const MakeProposal = () => {
     const [inputs, setInputs] = useState({});
@@ -113,7 +113,7 @@ const MakeProposal = () => {
             <label htmlFor="select">
                 Choose a network
                 <Select
-                    className={ useClasses("someClass") }
+                    className={ fmtClasses("someClass") }
                     options={ selectOptions }
                     autoFocus={ false }
                     onChange={ handleSelectChange }

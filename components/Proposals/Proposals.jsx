@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import { useReach } from "../../hooks";
+import { useReach, fmtClasses } from "../../hooks";
+import styles from "../../styles/SubWrapper.module.css";
 
 const Proposals = () => {
     const { setContract, connectAndContribute, proposals } = useReach();
 
 
     return (
-        <div>
+        <div className={ fmtClasses(styles.container, styles.itemsCenter) }>
             {
                 proposals.map((el, i) => {
                     return (

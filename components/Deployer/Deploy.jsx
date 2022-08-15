@@ -1,16 +1,16 @@
 import React from "react";
-import { useReach, useClasses } from "../../hooks";
+import { useReach, fmtClasses } from "../../hooks";
 import styles from "../../styles/Shared.module.css";
 
 const Deploy = () => {
     const { deploy, setTokenSupply, defaultTokenSupply } = useReach();
     return (
-        <div className={ useClasses(styles.container, styles.itemsCenter) }>
-            <h1 className={ useClasses(styles.infoText) }>Welcome Admin
+        <div className={ fmtClasses(styles.container, styles.itemsCenter) }>
+            <h1 className={ fmtClasses(styles.infoText) }>Welcome Admin
             </h1>
-            <h2 className={ useClasses(styles.infoText, styles.widthMax) }>Proceed with Deployment</h2>
+            <h2 className={ fmtClasses(styles.infoText, styles.widthMax) }>Proceed with Deployment</h2>
             <div
-                className={ useClasses(
+                className={ fmtClasses(
                     styles.flex,
                     styles.itemsCenter,
                     styles.gap10,
@@ -19,7 +19,7 @@ const Deploy = () => {
                 )
                 }>
                 <button
-                    className={ useClasses(styles.actionButton) }
+                    className={ fmtClasses(styles.actionButton) }
                     onClick={ () => deploy() }
                 >Deploy</button>
             </div>
