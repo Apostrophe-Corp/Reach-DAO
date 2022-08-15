@@ -1,77 +1,58 @@
-// TODO implement the contract backend
 'reach 0.1';
-/**
- * A utility function to retrieve the actual data stored in a map entry
- * @params m A value of type Maybe, usually returned when you try to retrieve data from a Map, this is because the value being referenced may not have been stored yet
- * @returns The indented value if it does exist in the Map, if not returns null
- */
-// eslint-disable-next-line no-undef
-const getDataFromMap = m => fromMaybe(m, (() => null), ((x) => x));
-/**
- * common Interact{
- * ...hasRandom,
- * }
- *
- * Participants
- * Deployer
- * Interact {
- * ...common,
- * getProposal: Fun([Object({
- * id
- * title
- * description
- * link
- * contractInfoStr
- * address
- * })])
- * deadline: UInt,
- * }
- *
- * Attacher
- * Interact {
- * ...common,
- * }
- */
-/**
- * APIs
- * Proposer
- * Voter
- * Interact {
- * upvote: Fun([],Null),
- * downvote: Fun([],Null),
- * }
- */
 
+const [isOutcome, NOT_PASSED, PASSED] = makeEnum(2);
 
-/**
- * const [upvotes,downvotes]= 
- * parallelReduce([0,0])
- * .timeout
- * if 
- * 
- * 
- * 
- * 
- */
+const DEADLINE = 10;
 
+const checkStatus = (numMembers, upVotes, downVotes) => {
+    const result = downVotes > ((numMembers / 100) * 40) ? NOT_PASSED :
+        (upVotes > downVotes) && (upVotes >= ((numMembers / 100) * 40)) ? PASSED :
+            upVotes >= ((numMembers / 100) * 60) ? PASSED :
+                NOT_PASSED;
+    return result;
+};
 
-// const contributors = new Map(UInt, Object({
-//     address: Address,
-//     amt: UInt
-// }));
+assert(checkStatus(100, 30, 45) == NOT_PASSED);
+assert(checkStatus(100, 0, 0) == NOT_PASSED);
+assert(checkStatus(100, 35, 30) == NOT_PASSED);
+assert(checkStatus(100, 60, 40) == PASSED);
+assert(checkStatus(100, 40, 30) == PASSED);
 
-// // In the parallel reduce for the Voter contribute call
-// contributors[count] = { address: this, amt: amt };
+forall(UInt, numMembers =>
+    forall(UInt, upVotes =>
+        forall(UInt, downVotes =>
+            assert(isOutcome(checkStatus(numMembers, upVotes, downVotes))))));
 
-// // -----------contributors Map---------
-// 1: { address: "someAddress", amt: 99 }
-// 2: { address: "someAddress", amt: 99 }
-// 3: { address: "someAddress", amt: 99 }
-// 3: { address: "someAddress", amt: 99 }
+const common = {
+    seeOutcome: Fun([UInt, UInt], Null),
+    informTimeout: Fun([], Null),
+    numMembers: UInt,
+};
 
-// // In the while loop, we retrieve the values using
-// const { address, amt } = contributors[newCount];
+export const main = Reach.App(() => {
+    const Deployer = Participant('Deployer', {
+        ...common,
+        // interact interface here
+    });
 
-// // Then we proceed with the transfers
-// transfer(amt).to(address)
+    const Proposers = API('Proposers', {
+        makeProposal: Fun([Object({
+            title: Bytes(48),
+            link: Bytes(128),
+            description: Bytes(200),
+            owner: Bytes(128),
+            contract: Contract,
+        })], Bool)
+    });
+
+    const Voters = API('Voters', {
+        vote: Fun([Bool], Bool),
+        // interact interface 
+    });
+    init();
+
+    Deployer.publish();
+    commit();
+
+});
 
