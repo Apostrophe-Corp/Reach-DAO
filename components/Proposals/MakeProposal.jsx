@@ -5,7 +5,7 @@ import { useClasses, useReach } from "../../hooks";
 
 const MakeProposal = () => {
     const [inputs, setInputs] = useState({});
-    const { makeProposal, proposals, setProposals } = useReach();
+    const { makeProposal, proposals, setProposals, user, updateProposals } = useReach();
 
     const handleOnChange = (e) => {
         const name = e.currentTarget.name;
@@ -17,15 +17,29 @@ const MakeProposal = () => {
         setInputs(inputs => ({ ...inputs, network: selectedOption }));
     };
 
-    const makeAndUpdateProposals = () => {
-        makeProposal(inputs.network, inputs.deadline);
+    const makeAndUpdateProposals = async () => {
+        const proposal = {
+            id: proposals.reduce((a, b) => a.id > b.id ? a.id : b.id) + 1,
+            title: inputs['title'],
+            link: inputs['link'],
+            description: inputs['description'],
+            address: user.account,
+        };
+        updateProposals([...proposals, {
+            id: proposals.reduce((a, b) => a.id > b.id ? a.id : b.id) + 1,
+            title: inputs['title'],
+            link: inputs['link'],
+            description: inputs['description'],
+            contractInfo: await makeProposal(proposal),
+            address: user.account,
+        }]);
         setProposals([...proposals, {
             id: proposals.reduce((a, b) => a.id > b.id ? a.id : b.id) + 1,
             title: inputs['title'],
             link: inputs['link'],
-            staked: inputs['staked'],
             description: inputs['description'],
-            owner: inputs['name'],
+            contractInfo: await makeProposal(proposal),
+            address: user.account,
         }]);
     };
 

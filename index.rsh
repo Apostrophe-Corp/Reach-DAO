@@ -16,6 +16,14 @@ const getDataFromMap = m => fromMaybe(m, (() => null), ((x) => x));
  * Deployer
  * Interact {
  * ...common,
+ * getProposal: Fun([Object({
+ * id
+ * title
+ * description
+ * link
+ * contractInfoStr
+ * address
+ * })])
  * deadline: UInt,
  * }
  *
@@ -27,12 +35,43 @@ const getDataFromMap = m => fromMaybe(m, (() => null), ((x) => x));
 /**
  * APIs
  * Proposer
+ * Voter
  * Interact {
- * stake: Fun([UInt], Null),
- * }
- *
- * Contributor
- * Interact {
- * contribute: Fun([UInt], Null),
+ * upvote: Fun([],Null),
+ * downvote: Fun([],Null),
  * }
  */
+
+
+/**
+ * const [upvotes,downvotes]= 
+ * parallelReduce([0,0])
+ * .timeout
+ * if 
+ * 
+ * 
+ * 
+ * 
+ */
+
+
+// const contributors = new Map(UInt, Object({
+//     address: Address,
+//     amt: UInt
+// }));
+
+// // In the parallel reduce for the Voter contribute call
+// contributors[count] = { address: this, amt: amt };
+
+// // -----------contributors Map---------
+// 1: { address: "someAddress", amt: 99 }
+// 2: { address: "someAddress", amt: 99 }
+// 3: { address: "someAddress", amt: 99 }
+// 3: { address: "someAddress", amt: 99 }
+
+// // In the while loop, we retrieve the values using
+// const { address, amt } = contributors[newCount];
+
+// // Then we proceed with the transfers
+// transfer(amt).to(address)
+

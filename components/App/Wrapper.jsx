@@ -1,14 +1,17 @@
 import React from "react";
 import { useClasses } from "../../hooks";
+import styles from "../../styles/SubWrapper.module.css";
 
 const Wrapper = ({ children }) => {
     return (
-        <div>
-            <div className={ useClasses("App") }>
-                <header className={ useClasses("App-header") } id="root">
-                    <h1>Reach Dao</h1>
-                    { children }
+        <div className={ useClasses(styles.flat) }>
+            <div className={ useClasses(styles.flat) }>
+                <header className={ useClasses(styles.label) }>
+                    <h1>Account Setup</h1>
                 </header>
+                <div className={ useClasses(styles.flat, styles.children) }>
+                    { children }
+                </div>
             </div>
         </div>
     );
