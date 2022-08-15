@@ -1,1 +1,0 @@
-// Interface to indicate the contract is being deployed

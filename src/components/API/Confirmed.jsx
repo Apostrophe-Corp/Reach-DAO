@@ -1,1 +1,0 @@
-// Interface to show that the contribution was successful

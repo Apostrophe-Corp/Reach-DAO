@@ -1,1 +1,0 @@
-// Interface to make a proposal which then spins up a contract and then the contract info string is returned

@@ -1,1 +1,0 @@
-// Interface to connect a wallet to an account for the contract

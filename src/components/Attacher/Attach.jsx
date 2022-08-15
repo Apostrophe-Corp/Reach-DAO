@@ -1,1 +1,0 @@
-// Interface to enter the contract information to use in attaching to the contract
