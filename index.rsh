@@ -2,9 +2,8 @@
 /* eslint-disable no-undef */
 'reach 0.1';
 
-const [isOutcome, NOT_PASSED, PASSED] = makeEnum(2);
+const [isOutcome, NOT_PASSED, PASSED] = makeEnum(2)
 
-const DEADLINE = 10;
 
 const checkStatus = (numMembers, upVotes, downVotes) => {
     const result = downVotes > ((numMembers / 100) * 40) ? NOT_PASSED :
@@ -32,54 +31,29 @@ const common = {
 };
 
 export const main = Reach.App(() => {
-    const Deployer = Participant('Deployer', {
-        ...common,
-        // interact interface here
-    });
+ const Deployer = Participant('Deployer', {
+  ...common,
+  // interact interface here
+ });
 
-    const Proposers = API('Proposers', {
-        makeProposal: Fun([Object({
-            title: Bytes(48),
-            link: Bytes(128),
-            description: Bytes(200),
-            owner: Bytes(128),
-            contract: Contract,
-        })], Bool)
-    });
-
-    /**
-     *  const Proposers = API('Proposers', {
-        makeProposal: Fun([Object({
-            title: Bytes(48),
-            link: Bytes(128),
-            description: Bytes(200),
-            owner: Bytes(128),
-            contract: Contract,
-        })], Bool)
-    });
-     */
-    
-    const Voters = API('Voters', {
-        vote: Fun([Bool], Bool),
-        // interact interface 
-    });
-    init();
+ const Proposers = API('Proposers', {  
+  makeProposal: Fun([Object({
+   title: Bytes(48),
+   link: Bytes(128),
+   description: Bytes(200),
+   owner: Bytes(128),
+   contract: Contract,
+  })], Bool)
+ });
+ 
+ const Voters = API('Voters', {
+  vote: Fun([Bool], Bool),
+  // interact interface 
+ });
+ init();
 
     Deployer.publish();
 
-    const count = parallelReduce(0)
-        .invariant(balance() == 0)
-        .while(true)
-        .api(Voters.vote, (truthy, notify) => {
-            notify(true);
-            return count;
-        })
-        .api(Proposers.makeProposal, (object, notify) => {
-            notify(true);
-            return count;
-        });
-
-    commit();
-
-});
+ 
+})
 
