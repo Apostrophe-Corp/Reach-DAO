@@ -60,6 +60,7 @@ const Proposals = () => {
                                 styles.flex,
                                 styles.itemsCenter,
                                 styles.widthMax,
+                                styles.gap15,
                             ) }>
                                 <button onClick={ () => {
                                     const ctcInfoStr = el.contract;
@@ -70,7 +71,7 @@ const Proposals = () => {
                                         proposal.upvote,
                                     ) }
                                 ><BiUpvote /></button>
-                                <button onClick={ () => {
+                                {/* <button onClick={ () => {
                                     const ctcInfoStr = el.contract;
                                     setContract({ ctcInfoStr });
                                     connectAndContribute();
@@ -78,7 +79,7 @@ const Proposals = () => {
                                 className={ fmtClasses(
                                         proposal.contribute,
                                     ) }
-                                ><ImGift /></button>
+                                ><ImGift /></button> */}
                                 <button onClick={ () => {
                                     const ctcInfoStr = el.contract;
                                     setContract({ ctcInfoStr });
