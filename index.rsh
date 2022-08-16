@@ -1,3 +1,5 @@
+/* eslint-disable eqeqeq */
+/* eslint-disable no-undef */
 'reach 0.1';
 
 const [isOutcome, NOT_PASSED, PASSED] = makeEnum(2)
