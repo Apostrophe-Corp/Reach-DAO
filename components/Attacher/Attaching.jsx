@@ -5,5 +5,3 @@ const Attaching = () => {
 };
 
 export default Attaching;
-
-// This should be the Loading component
