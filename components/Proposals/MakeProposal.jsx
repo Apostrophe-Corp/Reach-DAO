@@ -23,23 +23,25 @@ const MakeProposal = () => {
             title: inputs['title'],
             link: inputs['link'],
             description: inputs['description'],
-            address: user.account,
+            owner: user.account,
         };
+
         updateProposals([...proposals, {
             id: proposals.reduce((a, b) => a.id > b.id ? a.id : b.id) + 1,
             title: inputs['title'],
             link: inputs['link'],
             description: inputs['description'],
-            contractInfo: await makeProposal(proposal),
-            address: user.account,
+            contract: await makeProposal(proposal),
+            owner: user.account,
         }]);
+
         setProposals([...proposals, {
             id: proposals.reduce((a, b) => a.id > b.id ? a.id : b.id) + 1,
             title: inputs['title'],
             link: inputs['link'],
             description: inputs['description'],
-            contractInfo: await makeProposal(proposal),
-            address: user.account,
+            contract: await makeProposal(proposal),
+            owner: user.account,
         }]);
     };
 

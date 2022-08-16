@@ -58,7 +58,7 @@ export const main = Reach.App(() => {
         })], Bool)
     });
      */
-
+    
     const Voters = API('Voters', {
         vote: Fun([Bool], Bool),
         // interact interface 

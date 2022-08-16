@@ -26,8 +26,8 @@ const ReachContextProvider = ({ children }) => {
         standardUnit,
     });
     const [views, setViews] = useState({
-        view: "ConnectAccount",
-        wrapper: "AppWrapper",
+        view: "Proposals",
+        wrapper: "ProposalWrapper",
     });
 
     const [user, setUser] = useState({
@@ -44,7 +44,7 @@ const ReachContextProvider = ({ children }) => {
             title: 'Proposal 1',
             link: 'https://github.com/Aro1914/AroTable/blob/main/README.md',
             description: `A self-sorting number data structure`,
-            owner: 'https://github.com/Aro1914',
+            owner: 'someUserAddress',
             contract: "someContractString",
         },
         {
@@ -52,7 +52,7 @@ const ReachContextProvider = ({ children }) => {
             title: 'Proposal 2',
             link: 'https://github.com/Aro1914/Coffee-Shop/blob/main/README.md',
             description: `Not your regular coffee shop`,
-            owner: 'https://github.com/Aro1914',
+            owner: 'someUserAddress',
             contract: "someContractString",
         },
         {
@@ -60,7 +60,7 @@ const ReachContextProvider = ({ children }) => {
             title: 'Proposal 3',
             link: 'https://github.com/Aro1914/Trivia-API/blob/main/README.md',
             description: `A quiz API`,
-            owner: 'https://github.com/Aro1914',
+            owner: 'someUserAddress',
             contract: "someContractString",
         },
         {
@@ -68,7 +68,7 @@ const ReachContextProvider = ({ children }) => {
             title: 'Proposal 4',
             link: 'https://github.com/Aro1914/Fyyur-Project/blob/main/README.md',
             description: `A platform for musical artists to book musical venues`,
-            owner: 'https://github.com/Aro1914',
+            owner: 'someUserAddress',
             contract: "someContractString",
         },
         {
@@ -76,7 +76,7 @@ const ReachContextProvider = ({ children }) => {
             title: 'Proposal 5',
             link: 'https://github.com/Aro1914/Rock-Paper-Scissors-with-Reach/blob/main/README.md',
             description: `An implementation of the fun but sometimes intense game of Rock, Paper, Scissors`,
-            owner: 'https://github.com/Aro1914',
+            owner: 'someUserAddress',
             contract: "someContractString",
         },
         {
@@ -84,7 +84,7 @@ const ReachContextProvider = ({ children }) => {
             title: 'Proposal 6',
             link: 'https://github.com/AroTable-For-Server-Side/AroTable/blob/main/README.md',
             description: `A self-sorting number data structure (For Server Side)`,
-            owner: 'https://github.com/Aro1914',
+            owner: 'someUserAddress',
             contract: "someContractString",
         },
     ]);
@@ -265,7 +265,7 @@ const ReachContextProvider = ({ children }) => {
                     { contract?.ctcInfoStr &&
                         <ul className={ fmtClasses(styles.navList, styles.flat) }>
                             <li className={ fmtClasses(styles.navItem) }>Info Center</li>
-                            <li className={ fmtClasses(styles.navItem) } onClick={()=>setViews({view: 'Proposals', wrapper: 'ProposalWrapper'})}>Proposals</li>
+                            <li className={ fmtClasses(styles.navItem) } onClick={ () => setViews({ view: 'Proposals', wrapper: 'ProposalWrapper' }) }>Proposals</li>
                             <li className={ fmtClasses(styles.navItem) }>Bounties</li>
                         </ul> }
                 </div>
