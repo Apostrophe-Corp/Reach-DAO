@@ -50,7 +50,7 @@
 .upvote {
   background-color: transparent;
   border: transparent;
-  color: var(--themeText);
+  color: rgb(89, 255, 0);
   font-size: 20px;
 }
 
@@ -82,29 +82,45 @@
 }
 
 .contribute {
-  background-color: #000;
+  background-color: transparent;
+  border: transparent;
   color: rgb(174, 0, 255);
   font-size: 25px;
 }
 
-.contribution{
-    animation: contribute infinite ease-in;
+.contribute:hover {
+  animation: contribut 0.5s ease-in;
 }
 
-@keyframes contribute{
-    0% {
-        transform: scale(1, 1);
-      }
-      25% {
-        transform: scale(1.5, 1.5);
-      }
-      50% {
-        transform: scale(1, 1);
-      }
-      75% {
-        transform: scale(1.5, 1.5);
-      }
-      100% {
-        transform: scale(1, 1);
-      }
+@keyframes contribut {
+  0% {
+    transform: scale(1, 1);
+    transform: rotate(30deg);
+  }
+  25% {
+    transform: scale(1.5, 1.5);
+    transform: rotate(-30deg);
+    /* transform: rotate(0deg); */
+  }
+  50% {
+    transform: scale(1, 1);
+    transform: rotate(-30deg);
+  }
+  75% {
+    transform: scale(1.5, 1.5);
+    transform: rotate(-30deg);
+    /* transform: rotate(0deg); */
+  }
+  100% {
+    transform: scale(1, 1);
+    transform: rotate(30deg);
+  }
+}
+
+.interact {
+  opacity: 0;
+}
+
+.container:hover .interact {
+  opacity: 1;
 }
