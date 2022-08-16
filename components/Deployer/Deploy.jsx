@@ -1,20 +1,28 @@
 import React from "react";
-import { useReach } from "../../hooks";
+import { useReach, fmtClasses } from "../../hooks";
+import styles from "../../styles/Shared.module.css";
 
 const Deploy = () => {
     const { deploy, setTokenSupply, defaultTokenSupply } = useReach();
     return (
-        <div>
-            <h1>Welcome Admin <br />
-                Launch Tokens to Deploy
+        <div className={ fmtClasses(styles.container, styles.itemsCenter) }>
+            <h1 className={ fmtClasses(styles.infoText) }>Welcome Admin
             </h1>
-            <h2>How much Reach Tokens would we be launching today?</h2>
-            <input
-                type="number"
-                placeholder={ defaultTokenSupply }
-                onChange={ (e) => setTokenSupply(e.currentTarget.value) }
-            />
-            <button onClick={ () => deploy() }>Deploy</button>
+            <h2 className={ fmtClasses(styles.infoText, styles.widthMax) }>Proceed with Deployment</h2>
+            <div
+                className={ fmtClasses(
+                    styles.flex,
+                    styles.itemsCenter,
+                    styles.gap10,
+                    styles.directionY,
+                    styles.widthMax,
+                )
+                }>
+                <button
+                    className={ fmtClasses(styles.actionButton) }
+                    onClick={ () => deploy() }
+                >Deploy</button>
+            </div>
         </div>
     );
 };

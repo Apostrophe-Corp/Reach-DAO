@@ -4,6 +4,9 @@ import {
     ALGO_MyAlgoConnect as MyAlgoConnect
 } from "@reach-sh/stdlib";
 import * as backend from "../build/index.main.mjs";
+import { fmtClasses } from "../hooks/fmtClasses";
+import styles from "../styles/MainWrapper.module.css";
+
 const reach = loadStdlib(process.env);
 
 reach.setWalletFallback(
@@ -20,27 +23,21 @@ export const ReachContext = React.createContext();
 
 const ReachContextProvider = ({ children }) => {
     const [defaults] = useState({
-        defaultFundAmt: "10",
-        defaultContribution: "1",
-        defaultTokenSupply: 1000000000,
         standardUnit,
-
     });
     const [views, setViews] = useState({
         view: "ConnectAccount",
         wrapper: "AppWrapper",
     });
+
     const [user, setUser] = useState({
         account: "",
         balance: "",
     });
 
     const [contract, setContract] = useState(null);
+    const [contractInstance, setContractInstance] = useState(null);
     const [deadline, setDeadline] = useState(defaultDeadline);
-    const [contribution, setContribution] = useState(defaults.defaultContribution);
-    const [resolveContribution, setResolveContribution] = useState({});
-    const [tokenID, setTokenID] = useState(null);
-    const [tokenSupply, setTokenSupply] = useState(defaults.defaultTokenSupply);
     const [proposals, setProposals] = useState([
         {
             id: 1,
@@ -100,16 +97,12 @@ const ReachContextProvider = ({ children }) => {
             account,
             balance
         });
-        if (await reach.canFundFromFaucet()) {
-            setViews({ view: "FundAccount", wrapper: "AppWrapper" });
-        } else {
-            setViews({ view: "DeployerOrAttacher", wrapper: "AppWrapper" });
-        }
+        setViews({ view: "DeployerOrAttacher", wrapper: "AppWrapper" });
     };
 
     const fundAccount = async (fundAmount) => {
         await reach.fundFromFaucet(user.account, reach.parseCurrency(fundAmount ?? defaults.defaultFundAmt));
-        setViews({ views: "DeployerOrAttacher", wrapper: "AppWrapper" });
+        setViews({ view: "DeployerOrAttacher", wrapper: "AppWrapper" });
     };
 
     const skipFundAccount = async () => {
@@ -130,81 +123,18 @@ const ReachContextProvider = ({ children }) => {
 
     const deploy = async () => {
         setViews({ view: "Deploying", wrapper: "DeployerWrapper" });
-        const token = reach.launchToken(user.account, 'REACHTOKEN', 'RSH', { supply: tokenSupply });
-        setTokenID(token.id);
         const ctc = user.account.contract(backend);
-        setViews({ view: "Deploying" });
+        setContractInstance(ctc);
+        setViews({ ...views, view: "Deploying" });
         ctc.p.Deployer(DeployerInteract);
         const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
         console.log(ctcInfoStr);
         setContract({ ctcInfoStr });
-        setViews({ view: "Confirmed" });
+        setViews({ ...views, view: "Deployed" });
     };
 
-    const stake = async (num) => {
-        const [amt, amtOfTokens] = await reach.balancesOf(user.account, [null, tokenID]);
-        if (amtOfTokens && amtOfTokens >= num) {
-            const ctc = user.account.contract(backend, contract.ctcInfoStr);
-            try {
-                await ctc.apis.Proposer.stake(num);
-                setViews({ view: "Confirmed", wrapper: "DeployerWrapper" });
-            } catch (error) {
-                alert("Sorry your staking could not be processed...");
-            }
-        } else {
-            alert(`Sorry the amount of tokens you own is not sufficient...\n \nYou currently have ${reach.formatCurrency(amt)} ${standardUnit} and ${amtOfTokens} Reach Token${amtOfTokens > 1 ? 's' : ''}.`);
-        }
-    };
-
-    const makeProposal = async ({ networkName = "ETH", blocks = 10 }) => {
-        const proposalSetup = async () => {
-            // TODO implement the interact functionality
-            /**
-             * Plans to set a deadline for a proposal upon creation
-             * Although it may seem a deadline is would be kinda tricky to implement
-             * */
-            const makeDeadline = ({ network = networkName, value = blocks }) => {
-                const deadline = {};
-                const VALUE = Math.round(value);
-                switch (network) {
-                    case "ETH":
-                        deadline['ETH'] = VALUE;
-                        deadline['ALGO'] = VALUE * 10;
-                        deadline['CFX'] = VALUE * 100;
-                        break;
-                    case "ALGO":
-                        deadline['ETH'] = VALUE / 10;
-                        deadline['ALGO'] = VALUE;
-                        deadline['CFX'] = VALUE * 10;
-                        break;
-                    case "CFX":
-                        deadline['ETH'] = VALUE / 100;
-                        deadline['ALGO'] = VALUE / 10;
-                        deadline['CFX'] = VALUE;
-                        break;
-                    default:
-                        deadline['ETH'] = VALUE;
-                        deadline['ALGO'] = VALUE * 10;
-                        deadline['CFX'] = VALUE * 100;
-                        break;
-                }
-
-                return deadline;
-            };
-
-            setDeadline(makeDeadline({})[reach.connect]);
-            const ctc = user.account.contract(backend);
-            setViews({ view: "Deploying", wrapper: "ProposalWrapper" });
-            ctc.p.Deployer(DeployerInteract);
-            const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
-            console.log(ctcInfoStr);
-            // The contract string should at this point be sent to a server for safe keeping to be attached to at a later date on a random user's device
-            setContract({ ctcInfoStr });
-            setViews({ view: "Confirmed" });
-        };
-
-        setViews({ view: "Loading" });
-        await proposalSetup();
+    // TODO create a function to add to the Map of proposals stored in our contract;
+    const updateProposals = () => {
     };
 
     // const timeoutProposal () => {
@@ -221,34 +151,64 @@ const ReachContextProvider = ({ children }) => {
         }
     };
 
-    const connectAndContribute = async () => {
+    // TODO implement the logic to send a contribution, positive or negative
+    const connectAndUpvote = async (ctcInfoStr) => {
         try {
-            await user.account.tokenAccept(tokenID);
-            setViews({ view: "Attaching", wrapper: 'ProposalWrapper' });
-            const ctc = user.account.contract(backend, JSON.parse(contract.ctcInfoStr));
-            setViews({ view: 'Contribute', wrapper: 'ProposalWrapper' });
-            return await new Promise(resolveContribution => {
-                setResolveContribution({ resolveContribution });
-                ctc.apis.Contributor.contribute(contribution);
-                setViews({ views: 'PendingConfirmation', wrapper: 'ProposalWrapper' });
-            });
+            const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
+            ctc.apis.Voter.upvote();
         } catch (error) {
             console.log({ error });
         }
     };
 
+    const connectAndDownvote = async (ctcInfoStr) => {
+        try {
+            const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
+            ctc.apis.Voter.downvote();
+        } catch (error) {
+            console.log({ error });
+        }
+    };
+
+    // TODO figure out the use of this later
     const makeContribution = async (x) => {
-        setContribution(x);
+        // 
     };
 
     const confirmContribution = async () => {
-        resolveContribution.resolveContribution();
         setViews({ views: 'Confirmed', wrapper: 'ProposalWrapper' });
     };
 
     const DeployerInteract = {
         ...commonInteract,
         deadline,
+        getProposal: () => {
+            // TODO
+            // return an Object;
+        }
+    };
+
+    const makeProposal = async () => {
+        const proposalSetup = async () => {
+            // TODO implement the interact functionality
+            /**
+             * Plans to set a deadline for a proposal upon creation
+             * Although it may seem a deadline is would be kinda tricky to implement
+             * */
+            const deadline = { ETH: 1000, ALGO: 10000, CFX: 100000 }[reach.connector];
+            const ctc = user.account.contract(backend);
+            setViews({ view: "Deploying", wrapper: "ProposalWrapper" });
+            ctc.p.Deployer({ ...DeployerInteract, deadline: deadline });
+            const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
+            console.log(ctcInfoStr);
+            // The contract string should at this point be sent to a server for safe keeping to be attached to at a later date on a random user's device
+            setContract({ ctcInfoStr });
+            setViews({ ...views, view: "Confirmed" });
+            return ctcInfoStr;
+        };
+
+        setViews({ ...views, view: "Loading" });
+        await proposalSetup();
     };
 
     const AttacherInteract = {
@@ -271,10 +231,6 @@ const ReachContextProvider = ({ children }) => {
         fundAccount,
         connectAccount,
         skipFundAccount,
-        tokenID,
-        setTokenID,
-        tokenSupply,
-        setTokenSupply,
         deploy,
 
         // Participants
@@ -282,7 +238,7 @@ const ReachContextProvider = ({ children }) => {
         selectAttacher,
 
         // Deployer
-        stake,
+
         // timeoutProposal
 
         // Attacher  
@@ -290,9 +246,9 @@ const ReachContextProvider = ({ children }) => {
         makeProposal,
 
         // API
-        connectAndContribute,
+        // connectAndContribute,
         makeContribution,
-        confirmContribution,
+        updateProposals,
 
         // Proposals
         proposals,
@@ -300,8 +256,21 @@ const ReachContextProvider = ({ children }) => {
     };
 
     return (
-        <ReachContext.Provider values={ ReachContextValues }>
-            { children }
+        <ReachContext.Provider value={ ReachContextValues }>
+            <div className={ fmtClasses(styles.header) }>
+                <div className={ fmtClasses(styles.brandContainer) }>
+                    <h1>Reach DAO</h1>
+                </div>
+                <div className={ fmtClasses(styles.navContainer) }>
+                    { contract?.ctcInfoStr &&
+                        <ul className={ fmtClasses(styles.navList, styles.flat) }>
+                            <li className={ fmtClasses(styles.navItem) }>Info Center</li>
+                            <li className={ fmtClasses(styles.navItem) } onClick={()=>setViews({view: 'Proposals', wrapper: 'ProposalWrapper'})}>Proposals</li>
+                            <li className={ fmtClasses(styles.navItem) }>Bounties</li>
+                        </ul> }
+                </div>
+            </div>
+            <div className={ fmtClasses(styles.childrenContainer) } id="root">{ children }</div>
         </ReachContext.Provider>
     );
 };
