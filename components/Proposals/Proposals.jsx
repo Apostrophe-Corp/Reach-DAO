@@ -1,6 +1,8 @@
 import React, { useState } from "react";
+import { ImGift } from "react-icons/im";
+import { BiUpvote, BiDownvote } from "react-icons/bi";
 import { useReach, fmtClasses } from "../../hooks";
-import styles from "../../styles/SubWrapper.module.css";
+import styles from "../../styles/Shared.module.css";
 import proposal from "../../styles/Proposals.module.css";
 
 const Proposals = () => {
@@ -12,26 +14,46 @@ const Proposals = () => {
             styles.container,
             styles.spaceBetween,
             styles.flex,
+            styles.directionY,
+            styles.gap15,
         ) }>
             {
                 proposals.map((el, i) => {
                     return (
-                        <div key={ i }>
-                            <h3>{ el.title }</h3>
-                            <ul>
-                                <li>
-                                    <p>
-                                        { el.description }
-                                    </p>
+                        <div key={ i } className={ fmtClasses(
+                            styles.flex,
+                            styles.widthMax,
+                            proposal.container
+                        ) }>
+                            <h3 className={ fmtClasses(
+                                proposal.title
+                            ) }>{ el.title }</h3>
+                            <ul className={ fmtClasses(
+                                styles.flat,
+                                styles.widthMax,
+                            ) }>
+                                <li className={ fmtClasses(
+                                    styles.flat,
+                                    styles.widthMax,
+                                ) }>
+                                    { el.description }
                                 </li>
-                                <li>
-                                    <div>
-                                        <span> Owner: { el.owner }</span>
-                                        <a href={ el.link } target="_blank" rel="noreferrer">View proposal README</a>
+                                <li className={ fmtClasses(
+                                    styles.flat,
+                                    styles.widthMax,
+                                ) }>
+                                    <div className={ fmtClasses(
+                                        proposal.infoContainer,
+                                        styles.widthMax,
+                                    ) }>
+                                        <span className={ fmtClasses(
+                                            proposal.owner,
+                                        ) }> <strong>Owner:</strong> { el.owner }</span>
+                                        <a className={ fmtClasses(
+                                            proposal.readMe,
+                                        ) } href={ el.link } target="_blank" rel="noreferrer">View proposal README</a>
                                     </div>
                                 </li>
-                                <li></li>
-
                             </ul>
                             <div className={ fmtClasses(
                                 styles.flat,
@@ -43,7 +65,29 @@ const Proposals = () => {
                                     const ctcInfoStr = el.contract;
                                     setContract({ ctcInfoStr });
                                     connectAndContribute();
-                                } }>Contribute to this proposal</button>
+                                } }
+                                    className={ fmtClasses(
+                                        proposal.upvote,
+                                    ) }
+                                ><BiUpvote /></button>
+                                <button onClick={ () => {
+                                    const ctcInfoStr = el.contract;
+                                    setContract({ ctcInfoStr });
+                                    connectAndContribute();
+                                } }
+                                className={ fmtClasses(
+                                        proposal.contribute,
+                                    ) }
+                                ><ImGift /></button>
+                                <button onClick={ () => {
+                                    const ctcInfoStr = el.contract;
+                                    setContract({ ctcInfoStr });
+                                    connectAndContribute();
+                                } }
+                                    className={ fmtClasses(
+                                        proposal.downvote,
+                                    ) }
+                                ><BiDownvote /></button>
                             </div>
                         </div>
                     );
