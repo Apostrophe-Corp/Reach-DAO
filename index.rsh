@@ -8,18 +8,16 @@ const state = Bytes(20);
 
 
 const checkStatus = (numMembers, upVotes, downVotes) => {
- const result = downVotes > numMembers * 40 / 100 ? NOT_PASSED : 
-                upVotes > downVotes && upVotes >= numMembers * 40 / 100 ? PASSED :
+ const result = downVotes > numMembers * 50 / 100 ? NOT_PASSED : 
                 upVotes > numMembers * 50 / 100 ? PASSED :
                 INPROGRESS;
    return result;
 };
 
-assert(checkStatus(100, 30, 45) == NOT_PASSED);
-assert(checkStatus(100, 0, 0) == NOT_PASSED);
-assert(checkStatus(100, 35, 30) == NOT_PASSED);
-assert(checkStatus(100, 60, 40) == PASSED);
-assert(checkStatus(100, 40, 30) == PASSED);
+assert(checkStatus(100, 0, 51) == NOT_PASSED);
+assert(checkStatus(100, 0, 0) == INPROGRESS);
+assert(checkStatus(100, 51, 0) == PASSED);
+
 
 forall(UInt, numMembers => 
  forall(UInt, upVotes => 
