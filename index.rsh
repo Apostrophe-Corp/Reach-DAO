@@ -62,11 +62,11 @@ export const main = Reach.App(() => {
  });
  init();
 
- Deployer.only(() => {
-   const {title, link, description, owner, contract, ID} = declassify(interact.getProposal);
-   const numMembers = declassify(interact.numMembers);
- });
- Deployer.publish(title, link, description, owner, contract, numMembers, ID);
+    Deployer.only(() => {
+        const {title, link, description, owner, contract, ID} = declassify(interact.getProposal);
+        const numMembers = declassify(interact.numMembers);
+    });
+    Deployer.publish(title, link, description, owner, contract, numMembers, ID);
  Proposals.log(state.pad('created'), ID)
  commit();
 
@@ -74,11 +74,13 @@ export const main = Reach.App(() => {
 
 
  const end = lastConsensusTime() + DEADLINE;
+    commit();
 
- const contributors = new Map(UInt, Object({
-   address: Address,
-   amt: UInt,
- }));
+    Deployer.publish();
+    const contributors = new Map(UInt, Object({
+        address: Address,
+        amt: UInt,
+    }));
 
 
  const [
