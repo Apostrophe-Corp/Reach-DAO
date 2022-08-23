@@ -42,6 +42,7 @@ export const main = Reach.App(() => {
   upvote: Fun([], Null),
   downvote: Fun([], Null),
   contribute: Fun([UInt], Null),
+  claimRefund: Fun([], Null),
   // interact interface 
  });
 
@@ -65,10 +66,8 @@ export const main = Reach.App(() => {
     commit();
 
     Deployer.publish();
-    const contributors = new Map(UInt, Object({
-        address: Address,
-        amt: UInt,
-    }));
+    const contributors = new Map(Address, Address);
+    const amtContributed = new Map(Address, UInt);
 
 
  const [
@@ -93,7 +92,8 @@ export const main = Reach.App(() => {
       const payment = amt;
       return [payment, (notify) => {
          notify(null);
-         contributors[count] = {address: this, amt: amt}
+         contributors[this] = this;
+         amtContributed[this] = payment;
          return [upvote, downvote, count + 1, amtTotal + amt, this, keepGoing]
       }]
    })
@@ -113,45 +113,49 @@ export const main = Reach.App(() => {
          transfer(balance()).to(owner);
       }else {
          Proposals.log(state.pad('failed'), ID);
-         const fromMap = (m) => fromMaybe(m, (() => ({ address: lastAddress, amt: 0 })), ((x) => x));
+         const fromMapAdd = (m) => fromMaybe(m, (() => lastAddress), ((x) => x));
+         const fromMapAmt = (m) => fromMaybe(m, (() => 0), ((x) => x));
          commit();
          Deployer.publish();
-         var [newCount, currentBalance] = [count, balance()];
-         invariant(balance() == currentBalance);
-         while(newCount > 0) {
-            commit();
-            Deployer.publish();
-
-            if(balance() >= fromMap(contributors[newCount]).amt) { 
-               transfer(fromMap(contributors[newCount]).amt).to(
-                  fromMap(contributors[newCount]).address
+         const [newCount, currentBalance] = parallelReduce([count, balance()])
+         .invariant(balance() == currentBalance)
+         .while(newCount > 0 && currentBalance > 0)
+         .api(Voters.claimRefund, (notify => {
+            notify(null);
+            if(balance() >= fromMapAmt(amtContributed[this])) { 
+               transfer(fromMapAmt(amtContributed[this])).to(
+                  fromMapAdd(contributors[this])
                );
+               return [newCount - 1, balance()];
+            }else {
+               Proposals.log(state.pad('refundFailed'), ID);
+               return [newCount, balance()]
             }
-            [newCount, currentBalance] = [newCount - 1, balance()];
-            continue;
-         }
+         }))
 
       }
 
    }else {
-      Proposals.log(state.pad('failed'), ID);
-      const fromMap = (m) => fromMaybe(m, (() => ({ address: lastAddress, amt: 0 })), ((x) => x));
-      commit();
-      Deployer.publish();
-      var [newCount, currentBalance] = [count, balance()];
-      invariant(balance() == currentBalance);
-      while(newCount > 0) {
+         Proposals.log(state.pad('failed'), ID);
+         const fromMapAdd = (m) => fromMaybe(m, (() => lastAddress), ((x) => x));
+         const fromMapAmt = (m) => fromMaybe(m, (() => 0), ((x) => x));
          commit();
          Deployer.publish();
-
-        if (balance() >= fromMap(contributors[newCount]).amt) { 
-                transfer(fromMap(contributors[newCount]).amt).to(
-                    fromMap(contributors[newCount]).address
-                );
+         const [newCount, currentBalance] = parallelReduce([count, balance()])
+         .invariant(balance() == currentBalance)
+         .while(newCount > 0 && currentBalance > 0)
+         .api(Voters.claimRefund, (notify => {
+            notify(null);
+            if(balance() >= fromMapAmt(amtContributed[this])) { 
+               transfer(fromMapAmt(amtContributed[this])).to(
+                  fromMapAdd(contributors[this])
+               );
+               return [newCount - 1, balance()];
+            }else {
+               Proposals.log(state.pad('refundFailed'), ID);
+               return [newCount, balance()]
             }
-            [newCount, currentBalance] = [newCount - 1, balance()];
-            continue;
-      }
+         }))      
    }
    transfer(balance()).to(Deployer);
    commit();
