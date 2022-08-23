@@ -24,15 +24,9 @@ forall(UInt, numMembers =>
   forall(UInt, downVotes => 
    assert(isOutcome(checkStatus(numMembers, upVotes, downVotes))))));
 
-const common = {
- seeOutcome: Fun([UInt, UInt], Null),
- informTimeout: Fun([], Null),
-}
-
 export const main = Reach.App(() => {
    setOptions({untrustworthyMaps: true});
  const Deployer = Participant('Deployer', {
-  ...common,
   getProposal: Object({
    title: Bytes(48),
    link: Bytes(128),
@@ -42,13 +36,9 @@ export const main = Reach.App(() => {
    ID: UInt,
   }),
   numMembers: UInt,
-  projectPassed: Fun([], Null),
-  projectNotPassed: Fun([], Null),
-  // interact interface here
  });
  
  const Voters = API('Voters', {
-  ...common,
   upvote: Fun([], Null),
   downvote: Fun([], Null),
   contribute: Fun([UInt], Null),
