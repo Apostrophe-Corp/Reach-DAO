@@ -35,6 +35,7 @@
 }
 
 .readMe {
+  opacity: 0;
   display: inline-block;
   width: fit-content;
   color: var(--theme);
@@ -42,85 +43,111 @@
   background-color: #000;
 }
 
+.container:hover .readMe {
+  opacity: 1;
+}
+
 .readMe:hover {
   transform: scale(1.05, 1.1);
   color: var(--theme);
 }
 
+.interact {
+  position: relative;
+  opacity: 0;
+}
+
+.innerInteract {
+  padding: 5px !important;
+  border-radius: 5px;
+  border: 0.5px solid var(--themeText);
+  cursor: pointer;
+}
+
+.innerInteract:active {
+  background-color: var(--theme);
+  color: var(--reachBlack) !important;
+}
+
+.innerInteract:active .upvote,
+.innerInteract:active .downvote,
+.innerInteract:active .contribute {
+  color: var(--reachBlack) !important;
+}
+
+.container:hover .interact {
+  opacity: 1;
+}
+
 .upvote {
   background-color: transparent;
   border: transparent;
-  color: rgb(89, 255, 0);
+  color: var(--themeText);
   font-size: 20px;
+  position: relative !important;
 }
 
-.upvote:hover {
-  animation: animate 1s ease-in-out;
+.innerInteract:hover .upvote {
+  animation: animateUp 0.6s ease-in-out;
 }
 
-@keyframes animate {
+@keyframes animateUp {
   0% {
     transform: scale(1, 1);
-  }
-  25% {
-    transform: scale(1.5, 1.5);
+    top: 0;
   }
   50% {
-    transform: scale(1, 1);
-  }
-  75% {
-    transform: scale(1.5, 1.5);
+    top: -5px;
   }
   100% {
     transform: scale(1, 1);
+    top: 0;
   }
 }
 
 .downvote {
   composes: upvote;
-  color: var(--subTheme);
+  /* color: var(--subTheme); */
+}
+
+.innerInteract:hover .downvote {
+  animation: animateDown 0.6s ease-in-out;
+}
+
+@keyframes animateDown {
+  0% {
+    transform: scale(1, 1);
+    top: 0;
+  }
+  50% {
+    top: 5px;
+  }
+  100% {
+    transform: scale(1, 1);
+    top: 0;
+  }
 }
 
 .contribute {
   background-color: transparent;
+  margin: 0 auto;
   border: transparent;
-  color: rgb(174, 0, 255);
+  color: var(--themeText);
   font-size: 25px;
 }
 
-.contribute:hover {
-  animation: contribut 0.5s ease-in;
+.innerInteract:hover .contribute {
+  animation: contribute 0.5s ease-in;
 }
 
-@keyframes contribut {
+@keyframes contribute {
   0% {
     transform: scale(1, 1);
-    transform: rotate(30deg);
-  }
-  25% {
-    transform: scale(1.5, 1.5);
-    transform: rotate(-30deg);
-    /* transform: rotate(0deg); */
   }
   50% {
-    transform: scale(1, 1);
-    transform: rotate(-30deg);
-  }
-  75% {
-    transform: scale(1.5, 1.5);
-    transform: rotate(-30deg);
-    /* transform: rotate(0deg); */
+    transform: scale(1.2, 1.2);
   }
   100% {
     transform: scale(1, 1);
-    transform: rotate(30deg);
   }
-}
-
-.interact {
-  opacity: 0;
-}
-
-.container:hover .interact {
-  opacity: 1;
 }

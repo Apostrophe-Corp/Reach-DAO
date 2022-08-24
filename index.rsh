@@ -5,7 +5,7 @@
 
 const [isOutcome, NOT_PASSED, PASSED] = makeEnum(2);
 
-const fromMap = (m) => fromMaybe(m, (() => 0), ((x) => x));
+const getDataFromMaybe = m => fromMaybe(m, (() => null), ((x) => x));
 
 const checkStatus = (numMembers, upVotes, downVotes) => {
     const result = downVotes > ((numMembers / 100) * 40) ? NOT_PASSED :
@@ -27,18 +27,21 @@ forall(UInt, numMembers =>
             assert(isOutcome(checkStatus(numMembers, upVotes, downVotes))))));
 
 export const main = Reach.App(() => {
+    setOptions({ untrustworthyMaps: true });
     const Deployer = Participant('Deployer', {
         numMembers: UInt,
-        getProposal: Object({
-            title: Bytes(48),
-            link: Bytes(128),
-            description: Bytes(200),
-            owner: Address,
-            contract: Contract,
-            deadline: UInt,
-        }),
+        // getProposal: Object({
+        //     title: Bytes(48),
+        //     link: Bytes(128),
+        //     description: Bytes(200),
+        //     owner: Address,
+        //     contract: Contract,
+        //     deadline: UInt,
+        // }),
         projectPassed: Fun([], Null),
         projectNotPassed: Fun([], Null),
+        cashOut: Fun([], Null),
+        reFund: Fun([], Null),
         // interact interface here
     });
 
@@ -48,31 +51,45 @@ export const main = Reach.App(() => {
         contribute: Fun([UInt], Null),
         // interact interface 
     });
+
+    const Creator = API('Creator', {
+        refund: Fun([], Null),
+        cashOut: Fun([], Null),
+    });
+
+    const Balance = View({
+        currentBalance: UInt,
+    });
+
     init();
 
     Deployer.only(() => {
-        const proposal = declassify(interact.getProposal);
+        // const proposal = declassify(interact.getProposal);
         const numMembers = declassify(interact.numMembers);
     });
-    Deployer.publish(proposal, numMembers);
+    // Deployer.publish(proposal, numMembers);
+    Deployer.publish(numMembers);
     commit();
 
     Deployer.publish();
-    const contributors = new Map(UInt, Object({
+    const contributors = new Map(Address, Object({
         address: Address,
         amt: UInt,
     }));
 
-
-    const end = lastConsensusTime() + proposal.deadline;
+    // const end = lastConsensusTime() + proposal.deadline;
+    const end = lastConsensusTime() + 29;
 
     const [
         upvote,
         downvote,
         count,
         amtTotal
-    ] = parallelReduce([0, 0, 0, 0])
-        .invariant(balance() == amtTotal)
+    ] = parallelReduce([0, 0, 0, balance()])
+        .define(() => {
+            Balance.currentBalance.set(amtTotal);
+        })
+        .invariant(balance() == balance())
         .while(lastConsensusTime() <= end)
         .api(Voters.upvote, (notify) => {
             notify(null);
@@ -85,29 +102,49 @@ export const main = Reach.App(() => {
         .api_(Voters.contribute, (amt) => {
             return [amt, (notify) => {
                 notify(null);
-                contributors[count] = { address: this, amt: amt };
-                return [upvote, downvote, count + 1, amtTotal + amt];
+                contributors[this] = { address: this, amt: amt };
+                return [upvote, downvote, count + 1, balance()];
             }];
         })
         .timeout(absoluteTime(end), () => {
             Deployer.publish();
             if (checkStatus(numMembers, upvote, downvote) == PASSED) {
-                transfer(balance()).to(proposal.owner);
-                Deployer.interact.projectPassed();
+                Deployer.interact.cashOut();
             } else {
-                Deployer.interact.projectNotPassed();
-                var [newCount, currentBalance] = [count, balance()];
-                invariant(balance() == currentBalance);
-                while (newCount > 0) {
-                    commit();
-                    const { address, amt } = fromMap(contributors[newCount]);
-                    Deployer.publish();
-                    transfer(amt).to(address);
-                    [newCount, currentBalance] = [newCount - 1, balance()];
-                    continue;
-                }
+                Deployer.interact.reFund();
             }
+            return [upvote, downvote, count, amtTotal];
         });
+    transfer(balance()).to(Deployer);
+
+    const [
+        isEnd
+    ] = parallelReduce([false])
+        .invariant(balance() >= 0)
+        .while(!isEnd)
+        .api(Creator.cashOut, (notify) => {
+            notify(null);
+            transfer(balance()).to(Deployer);
+            Deployer.interact.projectPassed();
+            return [true];
+        })
+        .api(Creator.refund, (notify) => {
+            notify(null);
+            var [newCount, object] = [count, getDataFromMaybe(contributors[Deployer])];
+            invariant(balance() >= 0);
+            while (newCount > 0) {
+                commit();
+                Deployer.publish();
+                const { address, amt } = contributors[this];
+                transfer(object.amt).to(object.address);
+                [newCount, object] = [newCount - 1, getDataFromMaybe(contributors[this])];
+                continue;
+            }
+            Deployer.interact.projectNotPassed();
+            return [true];
+        });
+
+    commit();
 });
 
 

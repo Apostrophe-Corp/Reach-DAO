@@ -6,6 +6,7 @@
 .label {
   padding: 5px 50px;
   margin: 0 auto;
+  z-index: 1000;
   border-bottom-right-radius: 50px;
   border-bottom-left-radius: 50px;
   background-color: var(--reachWhite);

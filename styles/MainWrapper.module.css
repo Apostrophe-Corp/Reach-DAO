@@ -21,7 +21,7 @@ h3,
 h4,
 h5,
 h6 {
-  margin: 0;
+  margin: 0 !important;
   width: 100%;
 }
 
@@ -61,11 +61,13 @@ button {
 
 .brandContainer {
   composes: flat;
+  /* margin: 0 auto; */
   color: var(--reachWhite);
 }
 
 .navContainer {
   padding: 5px;
+  /* margin: 0 auto; */
 }
 
 .navList {
@@ -78,9 +80,9 @@ button {
 
 .navItem {
   display: inline-block;
-  padding: 5px;
+  padding: 5px !important;
   border-radius: 5px;
-  border: var(--boxShadowWhite);
+  border-bottom: 0.5px solid var(--reachWhite);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -88,10 +90,26 @@ button {
 }
 
 .navItem:hover {
-  box-shadow: 0 0 10px 2px #fff;
+  box-shadow: 0 2px 5px 0 #fff;
   transform: scale(1.05, 1.05);
+}
+
+.navItemActive {
+  composes: navItem;
+  border: 0.5px solid var(--reachWhite);
+  color: var(--reachWhite);
+}
+
+.navItemActive:hover {
+  box-shadow: none;
+  transform: none;
 }
 
 .childrenContainer {
   padding: 0 10px;
+}
+
+.itemsCenter {
+  justify-content: center !important;
+  align-items: center !important;
 }
