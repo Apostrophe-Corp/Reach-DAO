@@ -26,8 +26,8 @@ const ReachContextProvider = ({ children }) => {
         standardUnit,
     });
     const [views, setViews] = useState({
-        view: "Proposals",
-        wrapper: "ProposalWrapper",
+        view: "ConnectAccount",
+        wrapper: "AppWrapper",
     });
 
     const [user, setUser] = useState({
@@ -41,53 +41,84 @@ const ReachContextProvider = ({ children }) => {
     const [proposals, setProposals] = useState([
         {
             id: 1,
-            title: 'Proposal 1',
+            title: 'AroTable',
             link: 'https://github.com/Aro1914/AroTable/blob/main/README.md',
             description: `A self-sorting number data structure`,
             owner: 'someUserAddress',
             contract: "someContractString",
+            upvotes: 2,
+            downvotes: 8,
         },
         {
             id: 2,
-            title: 'Proposal 2',
+            title: 'Coffee Shop',
             link: 'https://github.com/Aro1914/Coffee-Shop/blob/main/README.md',
             description: `Not your regular coffee shop`,
             owner: 'someUserAddress',
             contract: "someContractString",
+            upvotes: 19,
+            downvotes: 38,
         },
         {
             id: 3,
-            title: 'Proposal 3',
+            title: 'Trivia API',
             link: 'https://github.com/Aro1914/Trivia-API/blob/main/README.md',
             description: `A quiz API`,
             owner: 'someUserAddress',
             contract: "someContractString",
+            upvotes: 9,
+            downvotes: 2,
         },
         {
             id: 4,
-            title: 'Proposal 4',
+            title: 'Fyyur Project',
             link: 'https://github.com/Aro1914/Fyyur-Project/blob/main/README.md',
             description: `A platform for musical artists to book musical venues`,
             owner: 'someUserAddress',
             contract: "someContractString",
+            upvotes: 7,
+            downvotes: 1,
         },
         {
             id: 5,
-            title: 'Proposal 5',
+            title: 'Rock, Paper, Scissors',
             link: 'https://github.com/Aro1914/Rock-Paper-Scissors-with-Reach/blob/main/README.md',
             description: `An implementation of the fun but sometimes intense game of Rock, Paper, Scissors`,
             owner: 'someUserAddress',
             contract: "someContractString",
+            upvotes: 11,
+            downvotes: 9,
         },
         {
             id: 6,
-            title: 'Proposal 6',
+            title: 'AroTable (For Server Side)',
             link: 'https://github.com/AroTable-For-Server-Side/AroTable/blob/main/README.md',
             description: `A self-sorting number data structure (For Server Side)`,
             owner: 'someUserAddress',
             contract: "someContractString",
+            upvotes: 99,
+            downvotes: 37,
         },
     ]);
+
+    /**
+     * Sorts an array of objects by a property present one level deep, in any object in the array. If successful, returns the sorted array of objects, else the original array is returned.
+     * @param {Array<Object>} arrayOfObjects The array of objects to be sorted
+     * @param {String} property The name of the property to be sorted by.
+     * @returns {Array<Object>} A sorted array of objects, if sorting was successful, otherwise returns the original array.
+     */
+    const sortArrayOfObjects = (arrayOfObjects, property) => {
+        if (!arrayOfObjects) return arrayOfObjects;
+        if (!Array.isArray(arrayOfObjects)) return arrayOfObjects;
+        if (arrayOfObjects.length <= 1) return arrayOfObjects;
+        let isInt = false;
+        return arrayOfObjects.map((el, index) => {
+            isInt = !isNaN(el?.[property]);
+            return !isInt ?
+                `${el?.[property]?.[0]?.toUpperCase()?.concat(el?.[property]?.slice(1))}^-.-^${index}` :
+                `${el?.[property]}^-.-^${index}`;
+        })?.sort(isInt ? (a, b) => Number(a?.split('^-.-^')?.[0]) - Number(b?.split('^-.-^')?.[0]) : undefined)?.map(el => arrayOfObjects[el?.split('^-.-^')?.[1]]);
+    };
 
     const connectAccount = async () => {
         const account = await reach.getDefaultAccount();
@@ -145,26 +176,33 @@ const ReachContextProvider = ({ children }) => {
         try {
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
             setViews({ view: "Attaching", wrapper: "AttacherWrapper" });
-            ctc.p.Attacher(AttacherInteract);
+            await ctc.p.Attacher(AttacherInteract);
+            setViews({ view: "Proposals", wrapper: "ProposalWrapper" });
         } catch (error) {
             console.log({ error });
         }
     };
 
     // TODO implement the logic to send a contribution, positive or negative
-    const connectAndUpvote = async (ctcInfoStr) => {
+    const connectAndUpvote = async (id, ctcInfoStr) => {
         try {
-            const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
-            ctc.apis.Voter.upvote();
+            // const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
+            // ctc.apis.Voter.upvote();
+            const proposal = proposals.filter(el => Number(el.id) === Number(id))[0];
+            proposal.upvotes = proposal.upvotes + 1;
+            setProposals([...proposals.filter(el => Number(el.id) !== Number(id)), proposal]);
         } catch (error) {
             console.log({ error });
         }
     };
 
-    const connectAndDownvote = async (ctcInfoStr) => {
+    const connectAndDownvote = async (id, ctcInfoStr) => {
         try {
-            const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
-            ctc.apis.Voter.downvote();
+            // const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
+            // ctc.apis.Voter.downvote();
+            const proposal = proposals.filter(el => Number(el.id) === Number(id))[0];
+            proposal.downvotes = proposal.downvotes + 1;
+            setProposals([...proposals.filter(el => Number(el.id) !== Number(id)), proposal]);
         } catch (error) {
             console.log({ error });
         }
@@ -225,6 +263,7 @@ const ReachContextProvider = ({ children }) => {
         // Misc
         contract,
         deadline,
+        sortArrayOfObjects,
 
         // Accounts
         user,
@@ -247,8 +286,12 @@ const ReachContextProvider = ({ children }) => {
 
         // API
         // connectAndContribute,
+        setContract,
         makeContribution,
+        connectAndUpvote,
+        connectAndDownvote,
         updateProposals,
+        confirmContribution,
 
         // Proposals
         proposals,
@@ -257,16 +300,16 @@ const ReachContextProvider = ({ children }) => {
 
     return (
         <ReachContext.Provider value={ ReachContextValues }>
-            <div className={ fmtClasses(styles.header) }>
+            <div className={ fmtClasses(styles.header, contract?.ctcInfoStr ? styles.itemsCenter : '') }>
                 <div className={ fmtClasses(styles.brandContainer) }>
                     <h1>Reach DAO</h1>
                 </div>
                 <div className={ fmtClasses(styles.navContainer) }>
-                    { contract?.ctcInfoStr &&
+                    { !contract?.ctcInfoStr &&
                         <ul className={ fmtClasses(styles.navList, styles.flat) }>
-                            <li className={ fmtClasses(styles.navItem) }>Info Center</li>
-                            <li className={ fmtClasses(styles.navItem) } onClick={ () => setViews({ view: 'Proposals', wrapper: 'ProposalWrapper' }) }>Proposals</li>
-                            <li className={ fmtClasses(styles.navItem) }>Bounties</li>
+                            <li className={ fmtClasses(views.view === 'InfoCenter' ? styles.navItemActive : styles.navItem) }>Info Center</li>
+                            <li className={ fmtClasses(views.view === 'Proposals' ? styles.navItemActive : styles.navItem) } onClick={ () => setViews({ view: 'Proposals', wrapper: 'ProposalWrapper' }) }>Proposals</li>
+                            <li className={ fmtClasses(views.view === 'Bounties' ? styles.navItemActive : styles.navItem) }>Bounties</li>
                         </ul> }
                 </div>
             </div>

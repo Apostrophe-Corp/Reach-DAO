@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ImGift } from "react-icons/im";
 import { BiUpvote, BiDownvote } from "react-icons/bi";
 import { useReach, fmtClasses } from "../../hooks";
@@ -6,7 +6,32 @@ import styles from "../../styles/Shared.module.css";
 import proposal from "../../styles/Proposals.module.css";
 
 const Proposals = () => {
-    const { setContract, connectAndContribute, proposals } = useReach();
+    const { setContract, connectAndContribute, connectAndUpvote, connectAndDownvote, proposals, sortArrayOfObjects } = useReach();
+    const [page, setPage] = useState(1);
+    const [pageNumbers, setPageNumbers] = useState([]);
+
+    useEffect(() => {
+        const x = [], runs = Math.ceil(proposals.length / 5);
+        let i = 0;
+        for (i; i < runs; i++) {
+            x.push(i);
+        }
+        setPageNumbers(x);
+    }, [proposals]);
+
+    const PageNumbers = ({ index }) => {
+        return (
+            <div key={ index } className={ fmtClasses(
+                styles.flat,
+                styles.flex,
+                styles.widthFitContent,
+                styles.itemsCenter,
+                page === index ? styles.pageNumActive : styles.pageNum
+            ) } onClick={ () => { setPage(index); } }>
+                { index }
+            </div>
+        );
+    };
 
 
     return (
@@ -18,7 +43,7 @@ const Proposals = () => {
             styles.gap15,
         ) }>
             {
-                proposals.map((el, i) => {
+                sortArrayOfObjects(proposals, "id").filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5)).map((el, i) => {
                     return (
                         <div key={ i } className={ fmtClasses(
                             styles.flex,
@@ -51,50 +76,79 @@ const Proposals = () => {
                                         ) }> <strong>Owner:</strong> { el.owner }</span>
                                         <a className={ fmtClasses(
                                             proposal.readMe,
-                                        ) } href={ el.link } target="_blank" rel="noreferrer">View proposal README</a>
+                                        ) } href={ el.link } target="_blank" rel="noreferrer">View Proposal Details</a>
                                     </div>
                                 </li>
                             </ul>
                             <div className={ fmtClasses(
                                 styles.flat,
-                                styles.flex,
-                                styles.itemsCenter,
-                                styles.widthMax,
                                 styles.gap15,
+                                styles.flex,
+                                styles.widthMax,
+                                styles.itemsCenter,
+                                proposal.interact,
                             ) }>
-                                <button onClick={ () => {
-                                    const ctcInfoStr = el.contract;
-                                    setContract({ ctcInfoStr });
-                                    connectAndContribute();
-                                } }
-                                    className={ fmtClasses(
-                                        proposal.upvote,
-                                    ) }
-                                ><BiUpvote /></button>
-                                {/* <button onClick={ () => {
-                                    const ctcInfoStr = el.contract;
-                                    setContract({ ctcInfoStr });
-                                    connectAndContribute();
-                                } }
-                                className={ fmtClasses(
-                                        proposal.contribute,
-                                    ) }
-                                ><ImGift /></button> */}
-                                <button onClick={ () => {
-                                    const ctcInfoStr = el.contract;
-                                    setContract({ ctcInfoStr });
-                                    connectAndContribute();
-                                } }
-                                    className={ fmtClasses(
-                                        proposal.downvote,
-                                    ) }
-                                ><BiDownvote /></button>
+                                <div onClick={ async () => {
+                                    await connectAndUpvote(el.id, el.contract);
+                                } } className={ fmtClasses(
+                                    proposal.innerInteract,
+                                    styles.flex,
+                                    styles.widthFitContent,
+                                    styles.itemsCenter,
+                                ) } title='Upvote this proposal'>
+                                    <BiUpvote
+                                        className={ fmtClasses(
+                                            proposal.upvote,
+                                        ) } /><span className={ fmtClasses(
+                                            proposal.dInlineBlock
+                                        ) }
+                                        >{ el.upvotes ?? 0 }</span>
+                                </div>
+                                <div className={ fmtClasses(
+                                    proposal.innerInteract,
+                                    styles.flex,
+                                    styles.widthFitContent,
+                                    styles.itemsCenter,
+                                ) } title='Contribute to this proposal'>
+                                    <ImGift onClick={ () => {
+                                        connectAndContribute();
+                                    } }
+                                        className={ fmtClasses(
+                                            proposal.contribute,
+                                        ) } />
+                                </div>
+                                <div onClick={ async () => {
+                                    await connectAndDownvote(el.id, el.contract);
+                                } } className={ fmtClasses(
+                                    proposal.innerInteract,
+                                    styles.flex,
+                                    styles.widthFitContent,
+                                    styles.itemsCenter,
+                                ) } title='Downvote this proposal'>
+                                    <BiDownvote
+                                        className={ fmtClasses(
+                                            proposal.downvote,
+                                        ) } /><span className={ fmtClasses(
+                                            proposal.dInlineBlock
+                                        ) }
+                                        >{ el.downvotes ?? 0 }</span>
+                                </div>
                             </div>
                         </div>
                     );
                 })
             }
-        </div>
+            <div className={ fmtClasses(
+                styles.flat,
+                styles.flex,
+                styles.widthMax,
+                styles.itemsCenter,
+                styles.gap10,
+            ) }>
+                {
+                    pageNumbers.map((el, i) => <PageNumbers key={ i } index={ i + 1 } />)
+                }
+            </div> </div>
     );
 };
 

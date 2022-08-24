@@ -7,6 +7,10 @@
   flex-wrap: wrap;
 }
 
+.dInlineBlock {
+  display: inline-block !important;
+}
+
 .itemsCenter {
   justify-content: center !important;
   align-items: center !important;
@@ -100,6 +104,11 @@
 
 .widthMax {
   width: 100% !important;
+}
+
+.width48 {
+  width: max(48%, 300px) !important;
+  margin: 0 auto;
 }
 
 .widthFitContent {
@@ -198,4 +207,26 @@
 
 .width70 {
   width: 70% !important;
+}
+
+.pageNum,
+.pageNumActive {
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+}
+
+.pageNum {
+  border-bottom: 0.5px solid var(--reachWhite);
+  color: var(--reachWhite);
+}
+
+.pageNum:hover {
+  box-shadow: 0 2px 5px 0 #fff;
+  transform: scale(1.05, 1.05);
+}
+
+.pageNumActive {
+  border: 0.5px solid var(--reachWhite);
+  color: var(--reachWhite);
 }
