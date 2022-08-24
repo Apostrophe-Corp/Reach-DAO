@@ -33,7 +33,7 @@ export const main = Reach.App(() => {
    description: Bytes(200),
    owner: Address,
    contract: Contract,
-   ID: UInt,
+   id: UInt,
   }),
   numMembers: UInt,
  });
@@ -52,11 +52,11 @@ export const main = Reach.App(() => {
  init();
 
     Deployer.only(() => {
-        const {title, link, description, owner, contract, ID} = declassify(interact.getProposal);
+        const {title, link, description, owner, contract, id} = declassify(interact.getProposal);
         const numMembers = declassify(interact.numMembers);
     });
-    Deployer.publish(title, link, description, owner, contract, numMembers, ID);
- Proposals.log(state.pad('created'), ID)
+    Deployer.publish(title, link, description, owner, contract, numMembers, id);
+ Proposals.log(state.pad('created'), id)
  commit();
 
  Deployer.publish();
@@ -101,20 +101,20 @@ export const main = Reach.App(() => {
    })
    .timeout(absoluteTime(end), () => {
       Deployer.publish();
-      Proposals.log(state.pad('timeout'), ID);
+      Proposals.log(state.pad('timeout'), id);
       return [upvote, downvote, count, amtTotal, lastAddress, keepGoing];   
    }); 
 
    if(checkStatus(numMembers,upvote,downvote) == PASSED){
-      Proposals.log(state.pad('passed'), ID);
+      Proposals.log(state.pad('passed'), id);
       transfer(balance()).to(owner);
    } 
    else if (checkStatus(numMembers,upvote,downvote) == INPROGRESS) {
       if (upvote > downvote && upvote + downvote > numMembers * 50 / 100) {
-         Proposals.log(state.pad('passed'), ID);
+         Proposals.log(state.pad('passed'), id);
          transfer(balance()).to(owner);
       }else {
-         Proposals.log(state.pad('failed'), ID);
+         Proposals.log(state.pad('failed'), id);
          const fromMapAdd = (m) => fromMaybe(m, (() => lastAddress), ((x) => x));
          const fromMapAmt = (m) => fromMaybe(m, (() => 0), ((x) => x));
          commit();
@@ -130,7 +130,7 @@ export const main = Reach.App(() => {
                );
                return [newCount - 1, balance()];
             }else {
-               Proposals.log(state.pad('refundFailed'), ID);
+               Proposals.log(state.pad('refundFailed'), id);
                return [newCount, balance()]
             }
          }))
@@ -138,7 +138,7 @@ export const main = Reach.App(() => {
       }
 
    }else {
-         Proposals.log(state.pad('failed'), ID);
+         Proposals.log(state.pad('failed'), id);
          const fromMapAdd = (m) => fromMaybe(m, (() => lastAddress), ((x) => x));
          const fromMapAmt = (m) => fromMaybe(m, (() => 0), ((x) => x));
          commit();
@@ -154,7 +154,7 @@ export const main = Reach.App(() => {
                );
                return [newCount - 1, balance()];
             }else {
-               Proposals.log(state.pad('refundFailed'), ID);
+               Proposals.log(state.pad('refundFailed'), id);
                return [newCount, balance()]
             }
          }))      
