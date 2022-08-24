@@ -131,15 +131,6 @@ const ReachContextProvider = ({ children }) => {
         setViews({ view: "DeployerOrAttacher", wrapper: "AppWrapper" });
     };
 
-    const fundAccount = async (fundAmount) => {
-        await reach.fundFromFaucet(user.account, reach.parseCurrency(fundAmount ?? defaults.defaultFundAmt));
-        setViews({ view: "DeployerOrAttacher", wrapper: "AppWrapper" });
-    };
-
-    const skipFundAccount = async () => {
-        setViews({ view: "DeployerOrAttacher", wrapper: "AppWrapper" });
-    };
-
     const selectAttacher = () => {
         setViews({ view: "Attach", wrapper: "AttacherWrapper" });
     };
@@ -186,8 +177,8 @@ const ReachContextProvider = ({ children }) => {
     // TODO implement the logic to send a contribution, positive or negative
     const connectAndUpvote = async (id, ctcInfoStr) => {
         try {
-            // const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
-            // ctc.apis.Voter.upvote();
+            const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
+            await ctc.apis.Voters.upvote();
             const proposal = proposals.filter(el => Number(el.id) === Number(id))[0];
             proposal.upvotes = proposal.upvotes + 1;
             setProposals([...proposals.filter(el => Number(el.id) !== Number(id)), proposal]);
@@ -198,8 +189,8 @@ const ReachContextProvider = ({ children }) => {
 
     const connectAndDownvote = async (id, ctcInfoStr) => {
         try {
-            // const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
-            // ctc.apis.Voter.downvote();
+            const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
+            await ctc.apis.Voters.downvote();
             const proposal = proposals.filter(el => Number(el.id) === Number(id))[0];
             proposal.downvotes = proposal.downvotes + 1;
             setProposals([...proposals.filter(el => Number(el.id) !== Number(id)), proposal]);

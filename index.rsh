@@ -1,3 +1,7 @@
+/* eslint-disable no-use-before-define */
+/* eslint-disable eqeqeq */
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 'reach 0.1';
 
 const [isOutcome, NOT_PASSED, PASSED, INPROGRESS] = makeEnum(3)
