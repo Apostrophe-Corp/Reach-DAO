@@ -68,6 +68,7 @@ export const main = Reach.App(() => {
     Deployer.publish();
     const contributors = new Map(Address, Address);
     const amtContributed = new Map(Address, UInt);
+    const contributorsSet = new Set();
 
 
  const [
@@ -94,6 +95,7 @@ export const main = Reach.App(() => {
          notify(null);
          contributors[this] = this;
          amtContributed[this] = payment;
+         contributorsSet.insert(this);
          return [upvote, downvote, count + 1, amtTotal + amt, this, keepGoing]
       }]
    })
@@ -122,7 +124,7 @@ export const main = Reach.App(() => {
          .while(newCount > 0 && currentBalance > 0)
          .api(Voters.claimRefund, (notify => {
             notify(null);
-            if(balance() >= fromMapAmt(amtContributed[this])) { 
+            if(balance() >= fromMapAmt(amtContributed[this]) && contributorsSet.member(this)) { 
                transfer(fromMapAmt(amtContributed[this])).to(
                   fromMapAdd(contributors[this])
                );
@@ -146,7 +148,7 @@ export const main = Reach.App(() => {
          .while(newCount > 0 && currentBalance > 0)
          .api(Voters.claimRefund, (notify => {
             notify(null);
-            if(balance() >= fromMapAmt(amtContributed[this])) { 
+            if(balance() >= fromMapAmt(amtContributed[this]) && contributorsSet.member(this)) { 
                transfer(fromMapAmt(amtContributed[this])).to(
                   fromMapAdd(contributors[this])
                );
