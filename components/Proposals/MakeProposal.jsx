@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import Select from "react-select";
-import 'bootstrap/dist/css/bootstrap.css';
 import { fmtClasses, useReach } from "../../hooks";
+import styles from '../../styles/Shared.module.css';
 
 const MakeProposal = () => {
     const [inputs, setInputs] = useState({});
-    const { makeProposal, proposals, setProposals, user, updateProposals } = useReach();
+    const { makeProposal, proposals, user, setViews } = useReach();
 
     const handleOnChange = (e) => {
         const name = e.currentTarget.name;
@@ -13,51 +12,56 @@ const MakeProposal = () => {
         setInputs(inputs => ({ ...inputs, [name]: value }));
     };
 
-    const handleSelectChange = (selectedOption) => {
-        setInputs(inputs => ({ ...inputs, network: selectedOption }));
-    };
-
     const makeAndUpdateProposals = async () => {
+        // The proposal
         const proposal = {
             id: proposals.reduce((a, b) => a.id > b.id ? a.id : b.id) + 1,
-            title: inputs['title'],
-            link: inputs['link'],
-            description: inputs['description'],
-            owner: user.account,
+            title: inputs['title'].padEnd(50, "\u0000"),
+            link: inputs['link'].padEnd(200, "\u0000"),
+            description: inputs['description'].padEnd(500, "\u0000"),
+            owner: user.account.padEnd(120, "\u0000"),
         };
 
-        updateProposals([...proposals, {
-            id: proposals.reduce((a, b) => a.id > b.id ? a.id : b.id) + 1,
-            title: inputs['title'],
-            link: inputs['link'],
-            description: inputs['description'],
-            contract: await makeProposal(proposal),
-            owner: user.account,
-        }]);
-
-        setProposals([...proposals, {
-            id: proposals.reduce((a, b) => a.id > b.id ? a.id : b.id) + 1,
-            title: inputs['title'],
-            link: inputs['link'],
-            description: inputs['description'],
-            contract: await makeProposal(proposal),
-            owner: user.account,
-        }]);
+        await makeProposal(proposal);
+        setViews({ view: "Proposals", wrapper: "ProposalWrapper" });
+        // Update the global proposal state
+        // setProposals([...proposals, {
+        //     id: proposals.reduce((a, b) => a.id > b.id ? a.id : b.id) + 1,
+        //     title: inputs['title'],
+        //     link: inputs['link'],
+        //     description: inputs['description'],
+        //     contract: await makeProposal(proposal),
+        //     owner: user.account,
+        //     upvotes: 0,
+        //     downvotes: 0,
+        //     contribs: 0,
+        //     timedOut: false,
+        //     didPass: false,
+        // }]);
     };
 
-    const selectOptions = [
-        { value: 'ETH', label: 'Ethereum' },
-        { value: 'ALGO', label: 'Algorand' },
-        { value: 'CFX', label: 'Conflux' },
-    ];
-
     return (
-        <div>
-            <label htmlFor="title">
-                <span>
+        <div className={ fmtClasses(styles.container, styles.itemsCenter) }>
+            <h2 className={ fmtClasses(styles.infoText, styles.widthMax) }>Enter Proposal Information</h2>
+            <label htmlFor="title" className={ fmtClasses(
+                styles.widthMax,
+                styles.flat,
+                styles.container,
+                styles.flex,
+                styles.itemsCenter,
+            ) }>
+                <span className={ fmtClasses(
+                    styles.widthMax,
+                    styles.dInlineBlock,
+                ) }>
                     Enter the proposal title
                 </span>
                 <input
+                    spellCheck='true'
+                    className={ fmtClasses(
+                        styles.field,
+                        styles.width70,
+                    ) }
                     id="title"
                     type="text"
                     name="title"
@@ -65,11 +69,25 @@ const MakeProposal = () => {
                     onChange={ handleOnChange }
                 />
             </label>
-            <label htmlFor="link">
-                <span>
+            <label htmlFor="link" className={ fmtClasses(
+                styles.widthMax,
+                styles.flat,
+                styles.container,
+                styles.flex,
+                styles.itemsCenter,
+            ) }>
+                <span className={ fmtClasses(
+                    styles.widthMax,
+                    styles.dInlineBlock,
+                ) }>
                     Enter the proposal link
                 </span>
                 <input
+                    spellCheck='false'
+                    className={ fmtClasses(
+                        styles.field,
+                        styles.width70,
+                    ) }
                     id="link"
                     type="url"
                     name="link"
@@ -77,62 +95,36 @@ const MakeProposal = () => {
                     onChange={ handleOnChange }
                 />
             </label>
-            <label htmlFor="description">
-                <span>
+            <label htmlFor="description" className={ fmtClasses(
+                styles.widthMax,
+                styles.flat,
+                styles.container,
+                styles.flex,
+                styles.itemsCenter,
+            ) }>
+                <span className={ fmtClasses(
+                    styles.widthMax,
+                    styles.dInlineBlock,
+                ) }>
                     Write a short description
                 </span>
                 <textarea
+                    spellCheck='true'
+                    className={ fmtClasses(
+                        styles.field,
+                        styles.width70,
+                    ) }
                     id="description"
                     name="description"
                     placeholder="If possible, describe your project in one sentence"
                     onChange={ handleOnChange }
                 />
             </label>
-            <label htmlFor="staked">
-                <span>
-                    Amount you which you wish to stake for the proposal
-                </span>
-                <input
-                    id="staked"
-                    type="number"
-                    name="staked"
-                    placeholder="1"
-                    onChange={ handleOnChange }
-                />
-            </label>
-            <label htmlFor="name">
-                <span>
-                    Enter your name
-                </span>
-                <input
-                    id="name"
-                    type="text"
-                    name="name"
-                    placeholder="John Doe..."
-                    onChange={ handleOnChange }
-                />
-            </label>
-            <label htmlFor="select">
-                Choose a network
-                <Select
-                    className={ fmtClasses("someClass") }
-                    options={ selectOptions }
-                    autoFocus={ false }
-                    onChange={ handleSelectChange }
-                />
-            </label>
-            <label htmlFor="deadline">
-                Set a Deadline
-                <input
-                    id="deadline"
-                    type="number"
-                    name="deadline"
-                    placeholder="Enter deadline in blocks"
-                    onChange={ handleOnChange }
-                />
-            </label>
-
-            <button onClick={ () => makeAndUpdateProposals }>Make Proposal</button>
+            <button onClick={ makeAndUpdateProposals } className={ fmtClasses(
+                styles.width70,
+                styles.actionBtn,
+                styles.dInlineBlock,
+            ) }>Make Proposal</button>
         </div>
     );
 };

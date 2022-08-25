@@ -4,7 +4,7 @@
 /* eslint-disable no-undef */
 'reach 0.1';
 
-const [isOutcome, NOT_PASSED, PASSED, INPROGRESS] = makeEnum(3)
+const [isOutcome, NOT_PASSED, PASSED, INPROGRESS] = makeEnum(3);
 
 const DEADLINE = 20;
 
@@ -12,9 +12,9 @@ const state = Bytes(20);
 
 
 const checkStatus = (numMembers, upVotes, downVotes) => {
- const result = downVotes > numMembers * 50 / 100 ? NOT_PASSED : 
-                upVotes > numMembers * 50 / 100 ? PASSED :
-                INPROGRESS;
+   const result = downVotes > numMembers * 50 / 100 ? NOT_PASSED :
+      upVotes > numMembers * 50 / 100 ? PASSED :
+         INPROGRESS;
    return result;
 };
 
@@ -23,147 +23,172 @@ assert(checkStatus(100, 0, 0) == INPROGRESS);
 assert(checkStatus(100, 51, 0) == PASSED);
 
 
-forall(UInt, numMembers => 
- forall(UInt, upVotes => 
-  forall(UInt, downVotes => 
-   assert(isOutcome(checkStatus(numMembers, upVotes, downVotes))))));
+forall(UInt, numMembers =>
+   forall(UInt, upVotes =>
+      forall(UInt, downVotes =>
+         assert(isOutcome(checkStatus(numMembers, upVotes, downVotes))))));
 
 export const main = Reach.App(() => {
-   setOptions({untrustworthyMaps: true});
- const Deployer = Participant('Deployer', {
-  getProposal: Object({
-   title: Bytes(48),
-   link: Bytes(128),
-   description: Bytes(200),
-   owner: Address,
-   contract: Contract,
-   id: UInt,
-  }),
-  numMembers: UInt,
- });
- 
- const Voters = API('Voters', {
-  upvote: Fun([], Null),
-  downvote: Fun([], Null),
-  contribute: Fun([UInt], Null),
-  claimRefund: Fun([], Null),
-  // interact interface 
- });
+   setOptions({ untrustworthyMaps: true });
+   const Deployer = Participant('Deployer', {
+      getProposal: Object({
+         id: UInt,
+         title: Bytes(50),
+         link: Bytes(200),
+         description: Bytes(500),
+         owner: Address,
+         contract: Bytes(120),
+      }),
+      deadline: UInt,
+      numMembers: UInt,
+      isProposal: Bool,
+   });
 
- const Proposals = Events({
-   log: [state, UInt]
- });
- init();
+   const Voters = API('Voters', {
+      upvote: Fun([], UInt),
+      downvote: Fun([], UInt),
+      contribute: Fun([UInt], UInt),
+      claimRefund: Fun([], Bool),
+      // interact interface 
+   });
 
-    Deployer.only(() => {
-        const {title, link, description, owner, contract, id} = declassify(interact.getProposal);
-        const numMembers = declassify(interact.numMembers);
-    });
-    Deployer.publish(title, link, description, owner, contract, numMembers, id);
- Proposals.log(state.pad('created'), id)
- commit();
+   const Proposals = Events({
+      log: [state, UInt],
+      created: [UInt, Bytes(50), Bytes(200), Bytes(500), Address, Bytes(120)],
+   });
+   init();
 
- Deployer.publish();
+   Deployer.only(() => {
+      const { title, link, description, owner, id, contract } = declassify(interact.getProposal);
+      const numMembers = declassify(interact.numMembers);
+      const isProposal = declassify(interact.isProposal);
+      const deadline = declassify(interact.deadline);
+   });
+   Deployer.publish(description);
+   commit();
+   Deployer.publish(title, link, owner);
+   commit();
+   Deployer.publish(id, contract, deadline);
+   commit();
+   Deployer.publish(isProposal, numMembers);
+   commit();
+   Deployer.publish();
+   Proposals.created(id, title, link, description, owner, contract);
 
 
- const end = lastConsensusTime() + DEADLINE;
-    commit();
+   if (isProposal) {
+      const end = lastConsensusTime() + deadline;
+      commit();
 
-    Deployer.publish();
-    const contributors = new Map(Address, Address);
-    const amtContributed = new Map(Address, UInt);
-    const contributorsSet = new Set();
-
-
- const [
-   upvote,
-   downvote,
-   count,
-   amtTotal,
-   lastAddress,
-   keepGoing,
- ] = parallelReduce([ 0, 0, 0, 0, Deployer, true])
-   .invariant(balance() == amtTotal)
-   .while(lastConsensusTime() <= end && keepGoing)
-   .api(Voters.upvote, (notify) => {
-      notify(null);
-      return [upvote + 1, downvote, count, amtTotal, lastAddress, checkStatus(upvote + 1, downvote, numMembers) == INPROGRESS ? true : false]
-   })
-   .api(Voters.downvote, (notify) => {
-      notify(null);
-      return [upvote, downvote + 1, count, amtTotal, lastAddress, checkStatus(upvote, downvote + 1, numMembers) == INPROGRESS ? true : false]
-   })
-   .api_(Voters.contribute, (amt) => {
-      const payment = amt;
-      return [payment, (notify) => {
-         notify(null);
-         contributors[this] = this;
-         amtContributed[this] = payment;
-         contributorsSet.insert(this);
-         return [upvote, downvote, count + 1, amtTotal + amt, this, keepGoing]
-      }]
-   })
-   .timeout(absoluteTime(end), () => {
       Deployer.publish();
-      Proposals.log(state.pad('timeout'), id);
-      return [upvote, downvote, count, amtTotal, lastAddress, keepGoing];   
-   }); 
+      const contributors = new Map(Address, Address);
+      const amtContributed = new Map(Address, UInt);
+      const contributorsSet = new Set();
 
-   if(checkStatus(numMembers,upvote,downvote) == PASSED){
-      Proposals.log(state.pad('passed'), id);
-      transfer(balance()).to(owner);
-   } 
-   else if (checkStatus(numMembers,upvote,downvote) == INPROGRESS) {
-      if (upvote > downvote && upvote + downvote > numMembers * 50 / 100) {
+
+      const [
+         upvote,
+         downvote,
+         count,
+         amtTotal,
+         lastAddress,
+         keepGoing,
+      ] = parallelReduce([0, 0, 0, 0, Deployer, true])
+         .invariant(balance() == amtTotal)
+         .while(lastConsensusTime() <= end && keepGoing)
+         .api(Voters.upvote, (notify) => {
+            notify(upvote + 1);
+            return [upvote + 1, downvote, count, amtTotal, lastAddress, checkStatus(upvote + 1, downvote, numMembers) == INPROGRESS ? true : false];
+         })
+         .api(Voters.downvote, (notify) => {
+            notify(downvote + 1);
+            return [upvote, downvote + 1, count, amtTotal, lastAddress, checkStatus(upvote, downvote + 1, numMembers) == INPROGRESS ? true : false];
+         })
+         .api_(Voters.contribute, (amt) => {
+            const payment = amt;
+            return [payment, (notify) => {
+               notify(balance());
+               contributors[this] = this;
+               amtContributed[this] = payment;
+               contributorsSet.insert(this);
+               return [upvote, downvote, count + 1, amtTotal + amt, this, keepGoing];
+            }];
+         })
+         .timeout(absoluteTime(end), () => {
+            Deployer.publish();
+            // Proposals.log(state.pad('timeout'), id);
+            return [upvote, downvote, count, amtTotal, lastAddress, keepGoing];
+         });
+
+      if (checkStatus(numMembers, upvote, downvote) == PASSED) {
          Proposals.log(state.pad('passed'), id);
          transfer(balance()).to(owner);
-      }else {
-         Proposals.log(state.pad('failed'), id);
-         const fromMapAdd = (m) => fromMaybe(m, (() => lastAddress), ((x) => x));
-         const fromMapAmt = (m) => fromMaybe(m, (() => 0), ((x) => x));
-         commit();
-         Deployer.publish();
-         const [newCount, currentBalance] = parallelReduce([count, balance()])
-         .invariant(balance() == currentBalance)
-         .while(newCount > 0 && currentBalance > 0)
-         .api(Voters.claimRefund, (notify => {
-            notify(null);
-            if(balance() >= fromMapAmt(amtContributed[this]) && contributorsSet.member(this)) { 
-               transfer(fromMapAmt(amtContributed[this])).to(
-                  fromMapAdd(contributors[this])
-               );
-               return [newCount - 1, balance()];
-            }else {
-               Proposals.log(state.pad('refundFailed'), id);
-               return [newCount, balance()]
-            }
-         }))
-
       }
+      else if (checkStatus(numMembers, upvote, downvote) == INPROGRESS) {
+         if (upvote > downvote && upvote + downvote > numMembers * 50 / 100) {
+            Proposals.log(state.pad('passed'), id);
+            transfer(balance()).to(owner);
+         } else {
+            Proposals.log(state.pad('failed'), id);
+            const fromMapAdd = (m) => fromMaybe(m, (() => lastAddress), ((x) => x));
+            const fromMapAmt = (m) => fromMaybe(m, (() => 0), ((x) => x));
+            commit();
+            Deployer.publish();
+            const [newCount, currentBalance] = parallelReduce([count, balance()])
+               .invariant(balance() == currentBalance)
+               .while(newCount > 0 && currentBalance > 0)
+               .api(Voters.claimRefund, (notify => {
+                  if (balance() >= fromMapAmt(amtContributed[this]) && contributorsSet.member(this)) {
+                     transfer(fromMapAmt(amtContributed[this])).to(
+                        fromMapAdd(contributors[this])
+                     );
+                     Proposals.log(state.pad('refundPassed'), id);
+                     notify(true);
+                     return [newCount - 1, balance()];
+                  } else {
+                     Proposals.log(state.pad('refundFailed'), id);
+                     notify(false);
+                     return [newCount, balance()];
+                  }
+               }));
 
-   }else {
+         }
+
+      } else {
          Proposals.log(state.pad('failed'), id);
          const fromMapAdd = (m) => fromMaybe(m, (() => lastAddress), ((x) => x));
          const fromMapAmt = (m) => fromMaybe(m, (() => 0), ((x) => x));
          commit();
          Deployer.publish();
          const [newCount, currentBalance] = parallelReduce([count, balance()])
-         .invariant(balance() == currentBalance)
-         .while(newCount > 0 && currentBalance > 0)
-         .api(Voters.claimRefund, (notify => {
-            notify(null);
-            if(balance() >= fromMapAmt(amtContributed[this]) && contributorsSet.member(this)) { 
-               transfer(fromMapAmt(amtContributed[this])).to(
-                  fromMapAdd(contributors[this])
-               );
-               return [newCount - 1, balance()];
-            }else {
-               Proposals.log(state.pad('refundFailed'), id);
-               return [newCount, balance()]
-            }
-         }))      
+            .invariant(balance() == currentBalance)
+            .while(newCount > 0 && currentBalance > 0)
+            .api(Voters.claimRefund, (notify => {
+               if (balance() >= fromMapAmt(amtContributed[this]) && contributorsSet.member(this)) {
+                  transfer(fromMapAmt(amtContributed[this])).to(
+                     fromMapAdd(contributors[this])
+                  );
+                  Proposals.log(state.pad('refundPassed'), id);
+                  notify(true);
+                  return [newCount - 1, balance()];
+               } else {
+                  Proposals.log(state.pad('refundFailed'), id);
+                  notify(false);
+                  return [newCount, balance()];
+               }
+            }));
+      }
+      transfer(balance()).to(Deployer);
+   } else {
+      var keepGoing = true;
+      invariant(balance() == 0);
+      while (keepGoing) {
+         commit();
+         Deployer.publish();
+         keepGoing = true;
+         continue;
+      }
    }
-   transfer(balance()).to(Deployer);
    commit();
 });
 

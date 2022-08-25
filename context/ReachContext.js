@@ -48,7 +48,11 @@ const ReachContextProvider = ({ children }) => {
             contract: "someContractString",
             upvotes: 2,
             downvotes: 8,
+            contribs: 0,
+            timedOut: false,
+            didPass: false,
         },
+
         {
             id: 2,
             title: 'Coffee Shop',
@@ -58,6 +62,9 @@ const ReachContextProvider = ({ children }) => {
             contract: "someContractString",
             upvotes: 19,
             downvotes: 38,
+            contribs: 0,
+            timedOut: false,
+            didPass: false,
         },
         {
             id: 3,
@@ -68,6 +75,9 @@ const ReachContextProvider = ({ children }) => {
             contract: "someContractString",
             upvotes: 9,
             downvotes: 2,
+            contribs: 0,
+            timedOut: false,
+            didPass: false,
         },
         {
             id: 4,
@@ -78,6 +88,9 @@ const ReachContextProvider = ({ children }) => {
             contract: "someContractString",
             upvotes: 7,
             downvotes: 1,
+            contribs: 0,
+            timedOut: false,
+            didPass: false,
         },
         {
             id: 5,
@@ -88,6 +101,9 @@ const ReachContextProvider = ({ children }) => {
             contract: "someContractString",
             upvotes: 11,
             downvotes: 9,
+            contribs: 0,
+            timedOut: false,
+            didPass: false,
         },
         {
             id: 6,
@@ -98,6 +114,9 @@ const ReachContextProvider = ({ children }) => {
             contract: "someContractString",
             upvotes: 99,
             downvotes: 37,
+            contribs: 0,
+            timedOut: false,
+            didPass: false,
         },
     ]);
 
@@ -120,6 +139,21 @@ const ReachContextProvider = ({ children }) => {
         })?.sort(isInt ? (a, b) => Number(a?.split('^-.-^')?.[0]) - Number(b?.split('^-.-^')?.[0]) : undefined)?.map(el => arrayOfObjects[el?.split('^-.-^')?.[1]]);
     };
 
+    /**
+     * It should return the bare string value without null characters
+     * @param {String} byte A string padded with null values
+     * @returns {String} A bare string without null characters
+     */
+    const noneNull = (byte) => {
+        let string = '', i = 0;
+        for (i; i < byte.length; i++) {
+            if (String(byte[i]) !== String("\u0000")) {
+                string += byte[i];
+            }
+        }
+        return string;
+    };
+
     const connectAccount = async () => {
         const account = await reach.getDefaultAccount();
         const balAtomic = await reach.balanceOf(account);
@@ -139,35 +173,50 @@ const ReachContextProvider = ({ children }) => {
         setViews({ view: "Deploy", wrapper: "DeployerWrapper" });
     };
 
-    const commonInteract = {
-        ...reach.hasRandom
-    };
-
-    const deploy = async () => {
-        setViews({ view: "Deploying", wrapper: "DeployerWrapper" });
-        const ctc = user.account.contract(backend);
-        setContractInstance(ctc);
-        setViews({ ...views, view: "Deploying" });
-        ctc.p.Deployer(DeployerInteract);
-        const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
-        console.log(ctcInfoStr);
-        setContract({ ctcInfoStr });
-        setViews({ ...views, view: "Deployed" });
-    };
 
     // TODO create a function to add to the Map of proposals stored in our contract;
-    const updateProposals = () => {
+    const updateProposals = ({ when, what }) => {
+        setProposals([...proposals, {
+            id: parseInt(what[0]),
+            title: noneNull(what[1]),
+            link: noneNull(what[2]),
+            description: noneNull(what[3]),
+            owner: noneNull(what[4]),
+            contract: noneNull(what[5]),
+            upvotes: 0,
+            downvotes: 0,
+            contribs: 0,
+            timedOut: false,
+            didPass: false,
+        }]);
     };
 
-    // const timeoutProposal () => {
-    // This will delete the timeoutProposal from the database or global state
-    // }
+    const timeoutProposal = ({ when, what }) => {
+        const ifState = x => x.padEnd(20, "\u0000");
+        switch (what[0]) {
+            case ifState('passed'):
+                const passedProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
+                passedProposal.timedOut = true;
+                passedProposal.didPass = true;
+                setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[1]))), passedProposal]);
+                break;
+            case ifState('failed'):
+                const failedProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
+                failedProposal.timedOut = true;
+                failedProposal.didPass = false;
+                setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[1]))), failedProposal]);
+                break;
+            default:
+                alert('Unhandled error..');
+                break;
+        }
+    };
 
     const attach = async (ctcInfoStr) => {
         try {
-            const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
             setViews({ view: "Attaching", wrapper: "AttacherWrapper" });
-            await ctc.p.Attacher(AttacherInteract);
+            const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
+            setContract({ ctcInfoStr });
             setViews({ view: "Proposals", wrapper: "ProposalWrapper" });
         } catch (error) {
             console.log({ error });
@@ -178,9 +227,9 @@ const ReachContextProvider = ({ children }) => {
     const connectAndUpvote = async (id, ctcInfoStr) => {
         try {
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
-            await ctc.apis.Voters.upvote();
+            const upvotes = await ctc.apis.Voters.upvote();
             const proposal = proposals.filter(el => Number(el.id) === Number(id))[0];
-            proposal.upvotes = proposal.upvotes + 1;
+            proposal.upvotes = upvotes;
             setProposals([...proposals.filter(el => Number(el.id) !== Number(id)), proposal]);
         } catch (error) {
             console.log({ error });
@@ -190,9 +239,9 @@ const ReachContextProvider = ({ children }) => {
     const connectAndDownvote = async (id, ctcInfoStr) => {
         try {
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
-            await ctc.apis.Voters.downvote();
+            const downvotes = await ctc.apis.Voters.downvote();
             const proposal = proposals.filter(el => Number(el.id) === Number(id))[0];
-            proposal.downvotes = proposal.downvotes + 1;
+            proposal.downvotes = downvotes;
             setProposals([...proposals.filter(el => Number(el.id) !== Number(id)), proposal]);
         } catch (error) {
             console.log({ error });
@@ -200,48 +249,94 @@ const ReachContextProvider = ({ children }) => {
     };
 
     // TODO figure out the use of this later
-    const makeContribution = async (x) => {
-        // 
+    const makeContribution = async (amount, id, ctcInfoStr) => {
+        try {
+            const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
+            const contribs = await ctc.apis.Voters.contribute(amount);
+            const proposal = proposals.filter(el => Number(el.id) === Number(id))[0];
+            proposal.contribs = contribs;
+            setProposals([...proposals.filter(el => Number(el.id) !== Number(id)), proposal]);
+        } catch (error) {
+            console.log({ error });
+        }
+    };
+
+    const connectAndClaimRefund = async (ctcInfoStr) => {
+        try {
+            const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
+            const didRefund = await ctc.apis.Voters.claimRefund();
+            if (didRefund) {
+                alert('Refund Success');
+            } else {
+                alert("It seems you don't have funds to claim, did you contribute to this proposal?");
+            }
+        } catch (error) {
+            console.log({ error });
+        }
     };
 
     const confirmContribution = async () => {
         setViews({ views: 'Confirmed', wrapper: 'ProposalWrapper' });
     };
 
-    const DeployerInteract = {
-        ...commonInteract,
-        deadline,
-        getProposal: () => {
-            // TODO
-            // return an Object;
-        }
+    const getProposal = {
+        id: 1,
+        title: 'AroTable'.padEnd(50, "\u0000"),
+        link: 'https://github.com/Aro1914/AroTable/blob/main/README.md'.padEnd(200, "\u0000"),
+        description: `A self-sorting number data structure`.padEnd(500, "\u0000"),
+        owner: user.account,
     };
 
-    const makeProposal = async () => {
+    const DeployerInteract = {
+        getProposal,
+        deadline,
+        numMembers: 5,
+        isProposal: false,
+    };
+
+    const deploy = async () => {
+        setViews({ view: "Deploying", wrapper: "DeployerWrapper" });
+        const ctc = user.account.contract(backend);
+        setContractInstance(ctc);
+        const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
+        console.log('Got here');
+        const interact = {
+            ...DeployerInteract,
+            getProposal: {
+                ...getProposal,
+                contract: ctcInfoStr.padEnd(120, "\u0000")
+            }
+        };
+        ctc.p.Deployer(interact);
+        console.log(ctcInfoStr);
+        setContract({ ctcInfoStr });
+        setViews({ view: "Deployed", wrapper: "DeployerWrapper" });
+    };
+
+    const makeProposal = async (proposal) => {
         const proposalSetup = async () => {
             // TODO implement the interact functionality
-            /**
-             * Plans to set a deadline for a proposal upon creation
-             * Although it may seem a deadline is would be kinda tricky to implement
-             * */
             const deadline = { ETH: 1000, ALGO: 10000, CFX: 100000 }[reach.connector];
             const ctc = user.account.contract(backend);
-            setViews({ view: "Deploying", wrapper: "ProposalWrapper" });
-            ctc.p.Deployer({ ...DeployerInteract, deadline: deadline });
-            const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
+            const ctcInfoStr = JSON.stringify(ctc.getInfo(), null, 2);
+            ctc.p.Deployer({
+                getProposal: {
+                    ...proposal,
+                    contract: ctcInfoStr.padEnd(120, "\u0000")
+                },
+                deadline: deadline,
+                numMembers: 5,
+                isProposal: true,
+            });
             console.log(ctcInfoStr);
+            ctc.events.log.monitor(timeoutProposal);
+            ctc.events.created.monitor(updateProposals);
             // The contract string should at this point be sent to a server for safe keeping to be attached to at a later date on a random user's device
             setContract({ ctcInfoStr });
-            setViews({ ...views, view: "Confirmed" });
             return ctcInfoStr;
         };
-
-        setViews({ ...views, view: "Loading" });
-        await proposalSetup();
-    };
-
-    const AttacherInteract = {
-        ...commonInteract,
+        const contract = await proposalSetup();
+        return contract;
     };
 
     const ReachContextValues = {
@@ -258,9 +353,7 @@ const ReachContextProvider = ({ children }) => {
 
         // Accounts
         user,
-        fundAccount,
         connectAccount,
-        skipFundAccount,
         deploy,
 
         // Participants
@@ -281,6 +374,7 @@ const ReachContextProvider = ({ children }) => {
         makeContribution,
         connectAndUpvote,
         connectAndDownvote,
+        connectAndClaimRefund,
         updateProposals,
         confirmContribution,
 
@@ -291,12 +385,12 @@ const ReachContextProvider = ({ children }) => {
 
     return (
         <ReachContext.Provider value={ ReachContextValues }>
-            <div className={ fmtClasses(styles.header, contract?.ctcInfoStr ? styles.itemsCenter : '') }>
+            <div className={ fmtClasses(styles.header, !contract?.ctcInfoStr ? styles.itemsCenter : '') }>
                 <div className={ fmtClasses(styles.brandContainer) }>
                     <h1>Reach DAO</h1>
                 </div>
                 <div className={ fmtClasses(styles.navContainer) }>
-                    { !contract?.ctcInfoStr &&
+                    { contract?.ctcInfoStr &&
                         <ul className={ fmtClasses(styles.navList, styles.flat) }>
                             <li className={ fmtClasses(views.view === 'InfoCenter' ? styles.navItemActive : styles.navItem) }>Info Center</li>
                             <li className={ fmtClasses(views.view === 'Proposals' ? styles.navItemActive : styles.navItem) } onClick={ () => setViews({ view: 'Proposals', wrapper: 'ProposalWrapper' }) }>Proposals</li>
