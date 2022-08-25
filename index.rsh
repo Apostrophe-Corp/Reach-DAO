@@ -44,9 +44,9 @@ export const main = Reach.App(() => {
       isProposal: Bool,
    });
 
-   const Stall = API('Stall', {
-      stall: Fun([], Null),
-   });
+   // const Stall = API('Stall', {
+   //    stall: Fun([], Null),
+   // });
 
    const Voters = API('Voters', {
       upvote: Fun([], UInt),
@@ -60,6 +60,32 @@ export const main = Reach.App(() => {
       log: [state, UInt],
       created: [UInt, Bytes(50), Bytes(200), Bytes(500), Address, Bytes(200)],
    });
+
+   const objectRep = Struct([ 
+      ["id", UInt ], 
+      ["title", Bytes(200)], 
+      ["link", Bytes(200)], 
+      ["description", Bytes(500)],
+      ["owner", Address],
+      ["contract", Bytes(100)],
+   ]);
+
+   const Info = API({
+      creating: Fun([objectRep], Null),
+      upvoted: Fun([Array(UInt, 2)], Null),
+      downvoted: Fun([Array(UInt, 2)], Null),
+      contributed: Fun([Array(UInt, 2)], Null),
+      timedOut: Fun([Array(UInt, 2)], Null), // index 0 is the id, 1 is a UInt 0 is false, 1 is true
+   });
+
+   const InformFront = Events({
+      create: [UInt, Bytes(200), Bytes(200), Bytes(500), Address, Bytes(100)],
+      upvote: [UInt, UInt],
+      downvote: [UInt, UInt],
+      contribute: [UInt, UInt],
+      timeOut: [UInt, UInt],
+   });
+
    init();
    Deployer.only(() => {
       const isProposal = declassify(interact.isProposal);
@@ -185,15 +211,42 @@ export const main = Reach.App(() => {
       }
       transfer(balance()).to(Deployer);
    } else {
-      const keepGoing = parallelReduce(true)
-         .invariant(balance() == 0)
-         .while(keepGoing)
-         .api(Stall.stall, (notify) => {
-            notify(null);
-            return true;
-         });
+   const keepGoing = parallelReduce(true)
+   .invariant(balance() == 0)
+   .while(keepGoing)
+   .api(Info.creating, (obj, notify) => {
+    	notify(null)
+    	InformFront.create(
+      objectRep.fromObject(obj).id,
+		objectRep.fromObject(obj).title,
+		objectRep.fromObject(obj).link,
+		objectRep.fromObject(obj).description,
+		objectRep.fromObject(obj).owner,
+		objectRep.fromObject(obj).contract
+	   )
+	   return true;
+   })
+   .api(Info.upvoted, (infoArray, notify)=>{
+      notify(null)
+      InformFront.upvote(infoArray[0], infoArray[1])
+      return true;
+   })
+   .api(Info.downvoted, (infoArray, notify)=>{
+      notify(null)
+      InformFront.downvote(infoArray[0], infoArray[1])
+      return true;
+   })
+   .api(Info.contributed, (infoArray, notify)=>{
+      notify(null)
+      InformFront.contribute(infoArray[0], infoArray[1])
+      return true;
+   })
+   .api(Info.timedOut, (infoArray, notify)=>{
+      notify(null)
+      InformFront.timeOut(infoArray[0], infoArray[1])
+      return true;
+   })
+      
    }
    commit();
 });
-
-
