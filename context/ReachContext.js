@@ -307,7 +307,7 @@ const ReachContextProvider = ({ children }) => {
             ...DeployerInteract,
             getContract,
         };
-        await ctc.p.Deployer(interact);
+        ctc.p.Deployer(interact);
         const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
         setContract({ ctcInfoStr });
         console.log(ctcInfoStr);
@@ -319,7 +319,7 @@ const ReachContextProvider = ({ children }) => {
             // TODO implement the interact functionality
             const deadline = { ETH: 1000, ALGO: 10000, CFX: 100000 }[reach.connector];
             const ctc = user.account.contract(backend);
-            await ctc.p.Deployer({
+            ctc.p.Deployer({
                 getProposal: {
                     ...proposal,
                 },
