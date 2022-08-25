@@ -15,7 +15,7 @@ const MakeProposal = () => {
     const makeAndUpdateProposals = async () => {
         // The proposal
         const proposal = {
-            id: proposals.length > 0 ? proposals.reduce((a, b) => a.id > b.id ? a.id : b.id) + 1 : 1,
+            id: proposals.length > 0 ? proposals.length === 1 ? proposals[0].id : Number(proposals.reduce((a, b) => a.id > b.id ? a.id : b.id)) + 1 : 1,
             title: inputs['title'],
             link: inputs['link'],
             description: inputs['description'],

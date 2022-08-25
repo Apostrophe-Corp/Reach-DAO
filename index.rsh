@@ -73,23 +73,23 @@ export const main = Reach.App(() => {
          const numMembers = declassify(interact.numMembers);
          const deadline = declassify(interact.deadline);
          const contract = declassify(interact.getContract());
+         const proposalInfo = {
+            id: id,
+            title: title,
+            link: link,
+            description: description,
+            owner: owner,
+            deadline: deadline,
+            contract: contract,
+            numMembers: numMembers,
+         }
       });
-      Deployer.publish(description);
-      commit();
-      Deployer.publish(title, link, owner);
-      commit();
-      Deployer.publish(id, deadline,contract);
-      commit();
-      Deployer.publish(numMembers);
-      Proposals.created(id, title, link, description, owner, contract);
-      const end = lastConsensusTime() + deadline;
-      commit();
-
-      Deployer.publish();
+      Deployer.publish(proposalInfo);
+      Proposals.created(proposalInfo.id, proposalInfo.title, proposalInfo.link, proposalInfo.description, proposalInfo.owner, proposalInfo.contract);
+      const end = lastConsensusTime() + proposalInfo.deadline;
       const contributors = new Map(Address, Address);
       const amtContributed = new Map(Address, UInt);
       const contributorsSet = new Set();
-
 
       const [
          upvote,
@@ -103,11 +103,11 @@ export const main = Reach.App(() => {
          .while(lastConsensusTime() <= end && keepGoing)
          .api(Voters.upvote, (notify) => {
             notify(upvote + 1);
-            return [upvote + 1, downvote, count, amtTotal, lastAddress, checkStatus(upvote + 1, downvote, numMembers) == INPROGRESS ? true : false];
+            return [upvote + 1, downvote, count, amtTotal, lastAddress, checkStatus(upvote + 1, downvote, proposalInfo.numMembers) == INPROGRESS ? true : false];
          })
          .api(Voters.downvote, (notify) => {
             notify(downvote + 1);
-            return [upvote, downvote + 1, count, amtTotal, lastAddress, checkStatus(upvote, downvote + 1, numMembers) == INPROGRESS ? true : false];
+            return [upvote, downvote + 1, count, amtTotal, lastAddress, checkStatus(upvote, downvote + 1, proposalInfo.numMembers) == INPROGRESS ? true : false];
          })
          .api_(Voters.contribute, (amt) => {
             const payment = amt;
@@ -125,16 +125,16 @@ export const main = Reach.App(() => {
             return [upvote, downvote, count, amtTotal, lastAddress, keepGoing];
          });
 
-      if (checkStatus(numMembers, upvote, downvote) == PASSED) {
-         Proposals.log(state.pad('passed'), id);
-         transfer(balance()).to(owner);
+      if (checkStatus(proposalInfo.numMembers, upvote, downvote) == PASSED) {
+         Proposals.log(state.pad('passed'), proposalInfo.id);
+         transfer(balance()).to(proposalInfo.owner);
       }
-      else if (checkStatus(numMembers, upvote, downvote) == INPROGRESS) {
-         if (upvote > downvote && upvote + downvote > numMembers * 50 / 100) {
-            Proposals.log(state.pad('passed'), id);
-            transfer(balance()).to(owner);
+      else if (checkStatus(proposalInfo.numMembers, upvote, downvote) == INPROGRESS) {
+         if (upvote > downvote && upvote + downvote > proposalInfo.numMembers * 50 / 100) {
+            Proposals.log(state.pad('passed'), proposalInfo.id);
+            transfer(balance()).to(proposalInfo.owner);
          } else {
-            Proposals.log(state.pad('failed'), id);
+            Proposals.log(state.pad('failed'), proposalInfo.id);
             const fromMapAdd = (m) => fromMaybe(m, (() => lastAddress), ((x) => x));
             const fromMapAmt = (m) => fromMaybe(m, (() => 0), ((x) => x));
             commit();
@@ -147,11 +147,11 @@ export const main = Reach.App(() => {
                      transfer(fromMapAmt(amtContributed[this])).to(
                         fromMapAdd(contributors[this])
                      );
-                     Proposals.log(state.pad('refundPassed'), id);
+                     Proposals.log(state.pad('refundPassed'), proposalInfo.id);
                      notify(true);
                      return [newCount - 1, balance()];
                   } else {
-                     Proposals.log(state.pad('refundFailed'), id);
+                     Proposals.log(state.pad('refundFailed'), proposalInfo.id);
                      notify(false);
                      return [newCount, balance()];
                   }
@@ -160,7 +160,7 @@ export const main = Reach.App(() => {
          }
 
       } else {
-         Proposals.log(state.pad('failed'), id);
+         Proposals.log(state.pad('failed'), proposalInfo.id);
          const fromMapAdd = (m) => fromMaybe(m, (() => lastAddress), ((x) => x));
          const fromMapAmt = (m) => fromMaybe(m, (() => 0), ((x) => x));
          commit();
@@ -173,11 +173,11 @@ export const main = Reach.App(() => {
                   transfer(fromMapAmt(amtContributed[this])).to(
                      fromMapAdd(contributors[this])
                   );
-                  Proposals.log(state.pad('refundPassed'), id);
+                  Proposals.log(state.pad('refundPassed'), proposalInfo.id);
                   notify(true);
                   return [newCount - 1, balance()];
                } else {
-                  Proposals.log(state.pad('refundFailed'), id);
+                  Proposals.log(state.pad('refundFailed'), proposalInfo.id);
                   notify(false);
                   return [newCount, balance()];
                }
