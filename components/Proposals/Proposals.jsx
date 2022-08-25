@@ -7,7 +7,7 @@ import Contribute from "./Contribute";
 import proposal from "../../styles/Proposals.module.css";
 
 const Proposals = () => {
-    const { setContract, connectAndContribute, connectAndUpvote, connectAndDownvote, connectAndClaimRefund, proposals, sortArrayOfObjects, setViews } = useReach();
+    const { setContract, connectAndUpvote, connectAndDownvote, connectAndClaimRefund, proposals, sortArrayOfObjects, setViews } = useReach();
     const [page, setPage] = useState(1);
     const [pageNumbers, setPageNumbers] = useState([]);
     const [showContrib, setShowContrib] = useState(false);
@@ -93,7 +93,7 @@ const Proposals = () => {
                                     proposal.interact,
                                 ) }>
                                     <div onClick={ async () => {
-                                        await connectAndUpvote(el.id, el.contract);
+                                        connectAndUpvote(el.id, el.contract);
                                     } } className={ fmtClasses(
                                         proposal.innerInteract,
                                         styles.flex,
@@ -116,7 +116,7 @@ const Proposals = () => {
                                         styles.directionY,
                                     ) } title='Contribute to this proposal'>
                                         <ImGift onClick={ () => {
-                                            connectAndContribute();
+                                            setShowContrib(true);
                                         } }
                                             className={ fmtClasses(
                                                 proposal.contribute,
@@ -127,7 +127,7 @@ const Proposals = () => {
                                         >{ el.contribs ?? 0 }</span>
                                     </div>
                                     <div onClick={ async () => {
-                                        await connectAndDownvote(el.id, el.contract);
+                                        connectAndDownvote(el.id, el.contract);
                                     } } className={ fmtClasses(
                                         proposal.innerInteract,
                                         styles.flex,

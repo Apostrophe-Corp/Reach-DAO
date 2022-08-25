@@ -3,7 +3,7 @@ import { useReach, fmtClasses } from "../../hooks";
 import styles from "../../styles/Shared.module.css";
 
 const Contribute = ({ id, infoStr, hide }) => {
-    const { defaultContribution, setContribution, makeContribution, confirmContribution } = useReach();
+    const { defaultContribution, setContribution, makeContribution } = useReach();
     const [amount, setAmount] = useState(0);
 
     return (
@@ -38,7 +38,7 @@ const Contribute = ({ id, infoStr, hide }) => {
                     styles.widthMax,
                 ) }
                 disabled={ !amount } onClick={ () => {
-                    setContribution(amount);
+                    // setContribution(amount);
                     // confirmContribution();
                     makeContribution(amount, id, infoStr);
                     hide();
