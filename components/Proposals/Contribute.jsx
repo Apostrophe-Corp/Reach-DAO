@@ -3,7 +3,7 @@ import { useReach, fmtClasses } from "../../hooks";
 import styles from "../../styles/Shared.module.css";
 
 const Contribute = ({ id, infoStr, hide }) => {
-    const { defaultContribution, setContribution, makeContribution } = useReach();
+    const { defaultContribution, makeContribution, contract } = useReach();
     const [amount, setAmount] = useState(0);
 
     return (
@@ -40,6 +40,8 @@ const Contribute = ({ id, infoStr, hide }) => {
                 disabled={ !amount } onClick={ () => {
                     // setContribution(amount);
                     // confirmContribution();
+                    console.log(contract.ctcInfoStr);
+                    console.log(infoStr);
                     makeContribution(amount, id, infoStr);
                     hide();
                 } }>Contribute</button>

@@ -189,6 +189,7 @@ const ReachContextProvider = ({ children }) => {
             timedOut: false,
             didPass: false,
         }]);
+        console.log(noneNull(what[5]));
     };
 
     const timeoutProposal = ({ when, what }) => {
@@ -229,7 +230,7 @@ const ReachContextProvider = ({ children }) => {
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
             const upvotes = await ctc.apis.Voters.upvote();
             const proposal = proposals.filter(el => Number(el.id) === Number(id))[0];
-            proposal.upvotes = upvotes;
+            proposal.upvotes = parseInt(upvotes);
             setProposals([...proposals.filter(el => Number(el.id) !== Number(id)), proposal]);
         } catch (error) {
             console.log({ error });
@@ -241,7 +242,7 @@ const ReachContextProvider = ({ children }) => {
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
             const downvotes = await ctc.apis.Voters.downvote();
             const proposal = proposals.filter(el => Number(el.id) === Number(id))[0];
-            proposal.downvotes = downvotes;
+            proposal.downvotes = parseInt(downvotes);
             setProposals([...proposals.filter(el => Number(el.id) !== Number(id)), proposal]);
         } catch (error) {
             console.log({ error });
@@ -254,7 +255,7 @@ const ReachContextProvider = ({ children }) => {
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
             const contribs = await ctc.apis.Voters.contribute(amount);
             const proposal = proposals.filter(el => Number(el.id) === Number(id))[0];
-            proposal.contribs = contribs;
+            proposal.contribs = parseInt(contribs);
             setProposals([...proposals.filter(el => Number(el.id) !== Number(id)), proposal]);
         } catch (error) {
             console.log({ error });
@@ -281,9 +282,9 @@ const ReachContextProvider = ({ children }) => {
 
     const getProposal = {
         id: 1,
-        title: 'AroTable'.padEnd(50, "\u0000"),
-        link: 'https://github.com/Aro1914/AroTable/blob/main/README.md'.padEnd(200, "\u0000"),
-        description: `A self-sorting number data structure`.padEnd(500, "\u0000"),
+        title: 'AroTable',
+        link: 'https://github.com/Aro1914/AroTable/blob/main/README.md',
+        description: `A self-sorting number data structure`,
         owner: user.account,
     };
 
@@ -294,15 +295,14 @@ const ReachContextProvider = ({ children }) => {
         isProposal: false,
     };
 
-    const getContract = () => {
-        return contract?.ctcInfoStr;
-    };
-
     const deploy = async () => {
         setViews({ view: "Deploying", wrapper: "DeployerWrapper" });
         const ctc = user.account.contract(backend);
-        setContractInstance(ctc);
+        setContractInstance(ctc);        
         console.log('Got here');
+        const getContract = () => {
+            return contract?.ctcInfoStr;
+        };
         const interact = {
             ...DeployerInteract,
             getContract,
@@ -319,6 +319,10 @@ const ReachContextProvider = ({ children }) => {
             // TODO implement the interact functionality
             const deadline = { ETH: 1000, ALGO: 10000, CFX: 100000 }[reach.connector];
             const ctc = user.account.contract(backend);
+            let ctcInfo = ''
+            const getContract = () => {
+                return ctcInfo;
+            };
             ctc.p.Deployer({
                 getProposal: {
                     ...proposal,
@@ -328,13 +332,12 @@ const ReachContextProvider = ({ children }) => {
                 isProposal: true,
                 getContract,
             });
-            const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
-            setContract({ ctcInfoStr });
-            console.log(ctcInfoStr);
+            ctcInfo = JSON.stringify(await ctc.getInfo(), null, 2);
+            console.log(ctcInfo);
             ctc.events.log.monitor(timeoutProposal);
             ctc.events.created.monitor(updateProposals);
             // The contract string should at this point be sent to a server for safe keeping to be attached to at a later date on a random user's device
-            return ctcInfoStr;
+            return ctcInfo;
         };
         const contract = await proposalSetup();
         return contract;
