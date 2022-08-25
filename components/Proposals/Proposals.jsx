@@ -200,7 +200,7 @@ const Proposals = () => {
             ) }>
                 <button onClick={ () => { setViews({ view: 'MakeProposal', wrapper: 'ProposalWrapper' }); } } className={ fmtClasses(
                     styles.width70,
-                    styles.actionBtn,
+                    styles.actionButton,
                     styles.dInlineBlock,
                 ) }>Make Proposal</button>
             </div>
