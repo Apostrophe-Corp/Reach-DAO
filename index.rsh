@@ -78,9 +78,9 @@ export const main = Reach.App(() => {
       commit();
       Deployer.publish(title, link, owner);
       commit();
-      Deployer.publish(id, deadline);
+      Deployer.publish(id, deadline,contract);
       commit();
-      Deployer.publish(numMembers, contract);
+      Deployer.publish(numMembers);
       Proposals.created(id, title, link, description, owner, contract);
       const end = lastConsensusTime() + deadline;
       commit();
