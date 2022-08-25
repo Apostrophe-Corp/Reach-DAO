@@ -16,10 +16,10 @@ const MakeProposal = () => {
         // The proposal
         const proposal = {
             id: proposals.reduce((a, b) => a.id > b.id ? a.id : b.id) + 1,
-            title: inputs['title'].padEnd(50, "\u0000"),
-            link: inputs['link'].padEnd(200, "\u0000"),
-            description: inputs['description'].padEnd(500, "\u0000"),
-            owner: user.account.padEnd(120, "\u0000"),
+            title: inputs['title'],
+            link: inputs['link'],
+            description: inputs['description'],
+            owner: user.account.networkAccount.addr,
         };
 
         await makeProposal(proposal);
