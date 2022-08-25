@@ -195,5 +195,3 @@ export const main = Reach.App(() => {
    }
    commit();
 });
-
-
