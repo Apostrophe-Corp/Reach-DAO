@@ -253,9 +253,9 @@ const ReachContextProvider = ({ children }) => {
     const makeContribution = async (amount, id, ctcInfoStr) => {
         try {
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
-            const contribs = await ctc.apis.Voters.contribute(amount);
+            const contribs = await ctc.apis.Voters.contribute(reach.parseCurrency(amount));
             const proposal = proposals.filter(el => Number(el.id) === Number(id))[0];
-            proposal.contribs = parseInt(contribs);
+            proposal.contribs = reach.formatCurrency(contribs, 4);
             setProposals([...proposals.filter(el => Number(el.id) !== Number(id)), proposal]);
         } catch (error) {
             console.log({ error });
@@ -298,7 +298,7 @@ const ReachContextProvider = ({ children }) => {
     const deploy = async () => {
         setViews({ view: "Deploying", wrapper: "DeployerWrapper" });
         const ctc = user.account.contract(backend);
-        setContractInstance(ctc);        
+        setContractInstance(ctc);
         console.log('Got here');
         const getContract = () => {
             return contract?.ctcInfoStr;
@@ -319,7 +319,7 @@ const ReachContextProvider = ({ children }) => {
             // TODO implement the interact functionality
             const deadline = { ETH: 1000, ALGO: 10000, CFX: 100000 }[reach.connector];
             const ctc = user.account.contract(backend);
-            let ctcInfo = ''
+            let ctcInfo = '';
             const getContract = () => {
                 return ctcInfo;
             };
