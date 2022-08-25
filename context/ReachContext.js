@@ -117,14 +117,14 @@ const ReachContextProvider = ({ children }) => {
         switch (what[0]) {
             case ifState('passed'):
                 const passedProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
-                passedProposal.timedOut = true;
-                passedProposal.didPass = true;
+                passedProposal['timedOut'] = true;
+                passedProposal['didPass'] = true;
                 setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[1]))), passedProposal]);
                 break;
             case ifState('failed'):
                 const failedProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
-                failedProposal.timedOut = true;
-                failedProposal.didPass = false;
+                failedProposal['timedOut'] = true;
+                failedProposal['didPass'] = false;
                 setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[1]))), failedProposal]);
                 break;
             default:
