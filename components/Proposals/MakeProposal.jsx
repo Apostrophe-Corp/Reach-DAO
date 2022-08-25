@@ -60,7 +60,7 @@ const MakeProposal = () => {
                     spellCheck='true'
                     className={ fmtClasses(
                         styles.field,
-                        styles.width70,
+                        styles.widthMax,
                     ) }
                     id="title"
                     type="text"
@@ -86,7 +86,7 @@ const MakeProposal = () => {
                     spellCheck='false'
                     className={ fmtClasses(
                         styles.field,
-                        styles.width70,
+                        styles.widthMax,
                     ) }
                     id="link"
                     type="url"
@@ -112,7 +112,7 @@ const MakeProposal = () => {
                     spellCheck='true'
                     className={ fmtClasses(
                         styles.field,
-                        styles.width70,
+                        styles.widthMax,
                     ) }
                     id="description"
                     name="description"
@@ -122,7 +122,7 @@ const MakeProposal = () => {
             </label>
             <button onClick={ makeAndUpdateProposals } className={ fmtClasses(
                 styles.width70,
-                styles.actionBtn,
+                styles.actionButton,
                 styles.dInlineBlock,
             ) }>Make Proposal</button>
         </div>

@@ -202,6 +202,8 @@
   color: var(--reachWhite);
   color: var(--themeText);
   border-radius: 5px;
+  padding: 10px 5px;
+  font-size: 16px;
   outline: none;
 }
 
