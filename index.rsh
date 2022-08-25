@@ -37,11 +37,15 @@ export const main = Reach.App(() => {
          link: Bytes(200),
          description: Bytes(500),
          owner: Address,
-         contract: Bytes(120),
       }),
+      getContract: Fun([], Bytes(200)),
       deadline: UInt,
       numMembers: UInt,
       isProposal: Bool,
+   });
+
+   const Stall = API('Stall', {
+      stall: Fun([], Null),
    });
 
    const Voters = API('Voters', {
@@ -54,29 +58,30 @@ export const main = Reach.App(() => {
 
    const Proposals = Events({
       log: [state, UInt],
-      created: [UInt, Bytes(50), Bytes(200), Bytes(500), Address, Bytes(120)],
+      created: [UInt, Bytes(50), Bytes(200), Bytes(500), Address, Bytes(200)],
    });
    init();
-
    Deployer.only(() => {
-      const { title, link, description, owner, id, contract } = declassify(interact.getProposal);
-      const numMembers = declassify(interact.numMembers);
       const isProposal = declassify(interact.isProposal);
-      const deadline = declassify(interact.deadline);
    });
-   Deployer.publish(description);
-   commit();
-   Deployer.publish(title, link, owner);
-   commit();
-   Deployer.publish(id, contract, deadline);
-   commit();
-   Deployer.publish(isProposal, numMembers);
-   commit();
-   Deployer.publish();
-   Proposals.created(id, title, link, description, owner, contract);
-
+   Deployer.publish(isProposal);
 
    if (isProposal) {
+      commit();
+      Deployer.only(() => {
+         const { title, link, description, owner, id } = declassify(interact.getProposal);
+         const numMembers = declassify(interact.numMembers);
+         const deadline = declassify(interact.deadline);
+         const contract = declassify(interact.getContract());
+      });
+      Deployer.publish(description);
+      commit();
+      Deployer.publish(title, link, owner);
+      commit();
+      Deployer.publish(id, deadline);
+      commit();
+      Deployer.publish(numMembers, contract);
+      Proposals.created(id, title, link, description, owner, contract);
       const end = lastConsensusTime() + deadline;
       commit();
 
@@ -180,14 +185,13 @@ export const main = Reach.App(() => {
       }
       transfer(balance()).to(Deployer);
    } else {
-      var keepGoing = true;
-      invariant(balance() == 0);
-      while (keepGoing) {
-         commit();
-         Deployer.publish();
-         keepGoing = true;
-         continue;
-      }
+      const keepGoing = parallelReduce(true)
+         .invariant(balance() == 0)
+         .while(keepGoing)
+         .api(Stall.stall, (notify) => {
+            notify(null);
+            return true;
+         });
    }
    commit();
 });

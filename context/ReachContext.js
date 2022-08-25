@@ -294,22 +294,23 @@ const ReachContextProvider = ({ children }) => {
         isProposal: false,
     };
 
+    const getContract = () => {
+        return contract?.ctcInfoStr;
+    };
+
     const deploy = async () => {
         setViews({ view: "Deploying", wrapper: "DeployerWrapper" });
         const ctc = user.account.contract(backend);
         setContractInstance(ctc);
-        const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
         console.log('Got here');
         const interact = {
             ...DeployerInteract,
-            getProposal: {
-                ...getProposal,
-                contract: ctcInfoStr.padEnd(120, "\u0000")
-            }
+            getContract,
         };
-        ctc.p.Deployer(interact);
-        console.log(ctcInfoStr);
+        await ctc.p.Deployer(interact);
+        const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
         setContract({ ctcInfoStr });
+        console.log(ctcInfoStr);
         setViews({ view: "Deployed", wrapper: "DeployerWrapper" });
     };
 
@@ -318,21 +319,21 @@ const ReachContextProvider = ({ children }) => {
             // TODO implement the interact functionality
             const deadline = { ETH: 1000, ALGO: 10000, CFX: 100000 }[reach.connector];
             const ctc = user.account.contract(backend);
-            const ctcInfoStr = JSON.stringify(ctc.getInfo(), null, 2);
-            ctc.p.Deployer({
+            await ctc.p.Deployer({
                 getProposal: {
                     ...proposal,
-                    contract: ctcInfoStr.padEnd(120, "\u0000")
                 },
                 deadline: deadline,
                 numMembers: 5,
                 isProposal: true,
+                getContract,
             });
+            const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
+            setContract({ ctcInfoStr });
             console.log(ctcInfoStr);
             ctc.events.log.monitor(timeoutProposal);
             ctc.events.created.monitor(updateProposals);
             // The contract string should at this point be sent to a server for safe keeping to be attached to at a later date on a random user's device
-            setContract({ ctcInfoStr });
             return ctcInfoStr;
         };
         const contract = await proposalSetup();
