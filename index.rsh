@@ -113,12 +113,18 @@ export const main = Reach.App(() => {
                 return [upvote, downvote + 1, count, amtTotal, lastAddress, checkStatus(upvote, downvote + 1, numMembers) == INPROGRESS ? true : false];
             })
             .api_(Voters.contribute, (amt) => {
+                check(amt > 0, "Contribution too small")
                 const payment = amt;
                 return [payment, (notify) => {
                     notify(balance());
-                    contributors[this] = this;
-                    amtContributed[this] = payment;
-                    contributorsSet.insert(this);
+                    if (contributorsSet.member(this)) {
+                        const fromMapAmt = (m) => fromMaybe(m, (() => 0), ((x) => x));
+                        amtContributed[this] = fromMapAmt(amtContributed[this]) + amt;
+                    } else {
+                        contributors[this] = this;
+                        amtContributed[this] = amt;
+                        contributorsSet.insert(this);
+                    }
                     return [upvote, downvote, count + 1, amtTotal + amt, this, keepGoing];
                 }];
             })
@@ -150,6 +156,7 @@ export const main = Reach.App(() => {
                             transfer(fromMapAmt(amtContributed[this])).to(
                                 fromMapAdd(contributors[this])
                             );
+                            contributorsSet.remove(this);
                             Proposals.log(state.pad('refundPassed'), id);
                             notify(true);
                             return [newCount - 1, balance()];
@@ -176,6 +183,7 @@ export const main = Reach.App(() => {
                         transfer(fromMapAmt(amtContributed[this])).to(
                             fromMapAdd(contributors[this])
                         );
+                        contributorsSet.remove(this);
                         Proposals.log(state.pad('refundPassed'), id);
                         notify(true);
                         return [newCount - 1, balance()];
