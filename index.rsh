@@ -34,12 +34,12 @@ export const main = Reach.App(() => {
     const Deployer = Participant('Deployer', {
         getProposal: Object({
             id: UInt,
-            title: Bytes(50),
-            link: Bytes(200),
-            description: Bytes(500),
+            title: Bytes(25),
+            link: Bytes(150),
+            description: Bytes(180),
             owner: Address,
         }),
-        getContract: Fun([], Bytes(200)),
+        getContract: Fun([], Bytes(100)),
         deadline: UInt,
         numMembers: UInt,
         isProposal: Bool,
@@ -74,7 +74,7 @@ export const main = Reach.App(() => {
 
     const Proposals = Events({
         log: [state, UInt],
-        created: [UInt, Bytes(50), Bytes(200), Bytes(500), Address, Bytes(200)],
+        created: [UInt, Bytes(25), Bytes(150), Bytes(180), Address, Bytes(100)],
     });
 
 
