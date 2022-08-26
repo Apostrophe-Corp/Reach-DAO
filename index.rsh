@@ -38,11 +38,11 @@ export const main = Reach.App(() => {
             link: Bytes(150),
             description: Bytes(180),
             owner: Address,
+            deadline: UInt,
+            numMembers: UInt,
+            isProposal: Bool,
         }),
-        getContract: Fun([], Bytes(100)),
-        deadline: UInt,
-        numMembers: UInt,
-        isProposal: Bool,
+        getContract: Fun([], Bytes(100))
     });
 
     const objectRep = Struct([
@@ -64,7 +64,7 @@ export const main = Reach.App(() => {
         downvote: Fun([], UInt),
         contribute: Fun([UInt], UInt),
         claimRefund: Fun([], Bool),
-        creating: Fun([objectRep], Null),
+        created: Fun([objectRep], Null),
         upvoted: Fun([UInt, UInt], Null),
         downvoted: Fun([UInt, UInt], Null),
         contributed: Fun([UInt, UInt], Null),
@@ -76,39 +76,23 @@ export const main = Reach.App(() => {
         log: [state, UInt],
         created: [UInt, Bytes(25), Bytes(150), Bytes(180), Address, Bytes(100)],
     });
-
-
-
     init();
     Deployer.only(() => {
-        const isProposal = declassify(interact.isProposal);
+        const { title, link, description, owner, id, isProposal, numMembers, deadline } = declassify(interact.getProposal);
     });
-    Deployer.publish(isProposal);
+    Deployer.publish(description, isProposal, numMembers);
 
     if (isProposal) {
         commit();
         Deployer.only(() => {
-            const { title, link, description, owner, id } = declassify(interact.getProposal);
-            const numMembers = declassify(interact.numMembers);
-            const deadline = declassify(interact.deadline);
             const contractInfo = declassify(interact.getContract());
         });
-        Deployer.publish(description);
-        commit();
-        Deployer.publish(title, link, owner);
-        commit();
-        Deployer.publish(id, deadline, contractInfo);
-        commit();
-        Deployer.publish(numMembers);
+        Deployer.publish(title, link, owner, id, deadline, contractInfo);
         Proposals.created(id, title, link, description, owner, contractInfo);
         const end = lastConsensusTime() + deadline;
-        commit();
-
-        Deployer.publish();
         const contributors = new Map(Address, Address);
         const amtContributed = new Map(Address, UInt);
         const contributorsSet = new Set();
-
 
         const [
             upvote,
@@ -207,7 +191,7 @@ export const main = Reach.App(() => {
         const keepGoing = parallelReduce(true)
             .invariant(balance() == 0)
             .while(keepGoing != false)
-            .api(Voters.creating, (obj, notify) => {
+            .api(Voters.created, (obj, notify) => {
                 notify(null);
                 const proposalStruct = objectRep.fromObject(obj);
                 const proposalObject = objectRep.toObject(proposalStruct);
@@ -223,7 +207,6 @@ export const main = Reach.App(() => {
             })
             .api(Voters.upvoted, (fNum, sNum, notify) => {
                 notify(null);
-                // const input = infoArray;
                 const num1 = fNum;
                 const num2 = sNum;
                 InformFront.that(state.pad('upvoted'), num1, num2);
@@ -231,7 +214,6 @@ export const main = Reach.App(() => {
             })
             .api(Voters.downvoted, (fNum, sNum, notify) => {
                 notify(null);
-                // const input = infoArray;
                 const num1 = fNum;
                 const num2 = sNum;
                 InformFront.that(state.pad('downvoted'), num1, num2);
@@ -239,15 +221,13 @@ export const main = Reach.App(() => {
             })
             .api(Voters.contributed, (fNum, sNum, notify) => {
                 notify(null);
-                // const input = infoArray;
                 const num1 = fNum;
                 const num2 = sNum;
                 InformFront.that(state.pad('contributed'), num1, num2);
                 return keepGoing;
             })
-            .api(Voters.timedOut, (fNum, sNum, notify) => {
+            .api(Voters., (fNum, sNum, notify) => {
                 notify(null);
-                // const input = infoArray;
                 const num1 = fNum;
                 const num2 = sNum;
                 InformFront.that(state.pad('timedOut'), num1, num2);

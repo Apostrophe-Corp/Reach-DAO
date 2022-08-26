@@ -93,50 +93,11 @@ const ReachContextProvider = ({ children }) => {
         setViews({ view: "Deploy", wrapper: "DeployerWrapper" });
     };
 
-
-    // TODO create a function to add to the Map of proposals stored in our contract;
-    const updateProposals = ({ when, what }) => {
-        setProposals([...proposals, {
-            id: parseInt(what[0]),
-            title: noneNull(what[1]),
-            link: noneNull(what[2]),
-            description: noneNull(what[3]),
-            owner: noneNull(what[4]),
-            contract: noneNull(what[5]),
-            upvotes: 0,
-            downvotes: 0,
-            contribs: 0,
-            timedOut: false,
-            didPass: false,
-        }]);
-        console.log(noneNull(what[5]));
-    };
-
-    const timeoutProposal = ({ when, what }) => {
-        const ifState = x => x.padEnd(20, "\u0000");
-        switch (what[0]) {
-            case ifState('passed'):
-                const passedProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
-                passedProposal['timedOut'] = true;
-                passedProposal['didPass'] = true;
-                setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[1]))), passedProposal]);
-                break;
-            case ifState('failed'):
-                const failedProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
-                failedProposal['timedOut'] = true;
-                failedProposal['didPass'] = false;
-                setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[1]))), failedProposal]);
-                break;
-            default:
-                alert('Unhandled error..');
-                break;
-        }
-    };
-
     const attach = async (ctcInfoStr) => {
         try {
             setViews({ view: "Attaching", wrapper: "AttacherWrapper" });
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
+            setContractInstance(ctc);
             setContract({ ctcInfoStr });
             setViews({ view: "Proposals", wrapper: "ProposalWrapper" });
         } catch (error) {
@@ -149,9 +110,7 @@ const ReachContextProvider = ({ children }) => {
         try {
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
             const upvotes = await ctc.apis.Voters.upvote();
-            const proposal = proposals.filter(el => Number(el.id) === Number(id))[0];
-            proposal.upvotes = parseInt(upvotes);
-            setProposals([...proposals.filter(el => Number(el.id) !== Number(id)), proposal]);
+            await ctc.apis.Voters.upvoted(id, parseInt(upvotes));
         } catch (error) {
             console.log({ error });
         }
@@ -161,9 +120,7 @@ const ReachContextProvider = ({ children }) => {
         try {
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
             const downvotes = await ctc.apis.Voters.downvote();
-            const proposal = proposals.filter(el => Number(el.id) === Number(id))[0];
-            proposal.downvotes = parseInt(downvotes);
-            setProposals([...proposals.filter(el => Number(el.id) !== Number(id)), proposal]);
+            await ctc.apis.Voters.downvoted(id, parseInt(downvotes));
         } catch (error) {
             console.log({ error });
         }
@@ -174,9 +131,7 @@ const ReachContextProvider = ({ children }) => {
         try {
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
             const contribs = await ctc.apis.Voters.contribute(reach.parseCurrency(amount));
-            const proposal = proposals.filter(el => Number(el.id) === Number(id))[0];
-            proposal.contribs = reach.formatCurrency(contribs, 4);
-            setProposals([...proposals.filter(el => Number(el.id) !== Number(id)), proposal]);
+            await ctc.apis.Voters.contributed(id, parseInt(contribs));
         } catch (error) {
             console.log({ error });
         }
@@ -200,19 +155,99 @@ const ReachContextProvider = ({ children }) => {
         setViews({ views: 'Confirmed', wrapper: 'ProposalWrapper' });
     };
 
-    const getProposal = {
-        id: 1,
-        title: 'AroTable',
-        link: 'https://github.com/Aro1914/AroTable/blob/main/README.md',
-        description: `A self-sorting number data structure`,
-        owner: user.account,
+    const DeployerInteract = {
+        getProposal: {
+            id: 1,
+            title: 'AroTable',
+            link: 'https://github.com/Aro1914/AroTable/blob/main/README.md',
+            description: `A self-sorting number data structure`,
+            owner: user.account,
+            deadline,
+            numMembers: 5,
+            isProposal: false,
+        },
     };
 
-    const DeployerInteract = {
-        getProposal,
-        deadline,
-        numMembers: 5,
-        isProposal: false,
+    // TODO create a function to add to the Map of proposals stored in our contract;
+    const updateProposals = async ({ when, what }) => {
+        await contractInstance.apis.Voters.created({
+            id: parseInt(what[0]),
+            title: noneNull(what[1]),
+            link: noneNull(what[2]),
+            description: noneNull(what[3]),
+            owner: noneNull(what[4]),
+            contractInfo: noneNull(what[5])
+        });
+        console.log(noneNull(what[5]));
+    };
+
+    const createProposal = ({ when, what }) => {
+        setProposals([...proposals, {
+            id: parseInt(what[0]),
+            title: noneNull(what[1]),
+            link: noneNull(what[2]),
+            description: noneNull(what[3]),
+            owner: noneNull(what[4]),
+            contract: noneNull(what[5]),
+            upvotes: 0,
+            downvotes: 0,
+            contribs: 0,
+            timedOut: false,
+            didPass: false,
+        }]);
+        console.log(noneNull(what[5]));
+    };
+
+    const acknowledge = ({ when, what }) => {
+        const ifState = x => x.padEnd(20, '\u0000');
+        switch (what[0]) {
+            case ifState('upvoted'):
+                const uProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
+                uProposal.upvotes = parseInt(what[2]);
+                setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[1]))), uProposal]);
+                break;
+            case ifState('downvoted'):
+                const dProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
+                dProposal.downvotes = parseInt(parseInt(what[2]));
+                setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[2]))), dProposal]);
+                break;
+            case ifState('contributed'):
+                const cProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
+                cProposal.contribs = reach.formatCurrency(parseInt(what[2]), 4);
+                setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[1]))), cProposal]);
+                break;
+            case ifState('timedOut'):
+                if (parseInt(what[2])) {
+                    const passedProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
+                    passedProposal['timedOut'] = true;
+                    passedProposal['didPass'] = true;
+                    setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[1]))), passedProposal]);
+                } else {
+                    const failedProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
+                    failedProposal['timedOut'] = true;
+                    failedProposal['didPass'] = false;
+                    setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[1]))), failedProposal]);
+                }
+                break;
+            default:
+                alert('Unhandled error..');
+                break;
+        }
+    };
+
+    const timeoutProposal = async ({ when, what }) => {
+        const ifState = x => x.padEnd(20, "\u0000");
+        switch (what[0]) {
+            case ifState('passed'):
+                await contractInstance.apis.Voters.timedOut(parseInt(what[1]), 1);
+                break;
+            case ifState('failed'):
+                await contractInstance.apis.Voters.timedOut(parseInt(what[1]), 0);
+                break;
+            default:
+                alert('Unhandled error..');
+                break;
+        }
     };
 
     const deploy = async () => {
@@ -229,6 +264,8 @@ const ReachContextProvider = ({ children }) => {
         };
         ctc.p.Deployer(interact);
         const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
+        ctc.events.create.monitor(createProposal);
+        ctc.events.that.monitor(acknowledge);
         setContract({ ctcInfoStr });
         console.log(ctcInfoStr);
         setViews({ view: "Deployed", wrapper: "DeployerWrapper" });
@@ -246,17 +283,16 @@ const ReachContextProvider = ({ children }) => {
             ctc.p.Deployer({
                 getProposal: {
                     ...proposal,
+                    deadline: deadline,
+                    numMembers: 5,
+                    isProposal: true,
                 },
-                deadline: deadline,
-                numMembers: 5,
-                isProposal: true,
                 getContract,
             });
             ctcInfo = JSON.stringify(await ctc.getInfo(), null, 2);
             console.log(ctcInfo);
             ctc.events.log.monitor(timeoutProposal);
             ctc.events.created.monitor(updateProposals);
-            // The contract string should at this point be sent to a server for safe keeping to be attached to at a later date on a random user's device
             return ctcInfo;
         };
         const contract = await proposalSetup();
@@ -299,7 +335,6 @@ const ReachContextProvider = ({ children }) => {
         connectAndUpvote,
         connectAndDownvote,
         connectAndClaimRefund,
-        updateProposals,
         confirmContribution,
 
         // Proposals

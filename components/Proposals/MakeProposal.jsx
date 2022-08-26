@@ -8,7 +8,28 @@ const MakeProposal = () => {
 
     const handleOnChange = (e) => {
         const name = e.currentTarget.name;
-        const value = e.currentTarget.value;
+        let value = e.currentTarget.value;
+        if (name === 'title') {
+            if (value.length > 25) {
+                value = String(value).slice(0, 25);
+                e.currentTarget.value = value;
+            }
+        }
+
+        if (name === 'link') {
+            if (value.length > 150) {
+                value = String(value).slice(0, 150);
+                e.currentTarget.value = value;
+            }
+        }
+
+        if (name === 'description') {
+            if (value.length > 180) {
+                value = String(value).slice(0, 180);
+                e.currentTarget.value = value;
+            }
+        }
+
         setInputs(inputs => ({ ...inputs, [name]: value }));
     };
 
@@ -40,7 +61,7 @@ const MakeProposal = () => {
                     styles.widthMax,
                     styles.dInlineBlock,
                 ) }>
-                    Enter the proposal title
+                    Enter the proposal title (Max 25)
                 </span>
                 <input
                     spellCheck='true'
@@ -66,7 +87,7 @@ const MakeProposal = () => {
                     styles.widthMax,
                     styles.dInlineBlock,
                 ) }>
-                    Enter the proposal link
+                    Enter the proposal link (Max 150)
                 </span>
                 <input
                     spellCheck='false'
@@ -77,7 +98,7 @@ const MakeProposal = () => {
                     id="link"
                     type="url"
                     name="link"
-                    placeholder="https://github.com/user/repository/blob/main/README.md"
+                    placeholder="Link longer than 150 characters? Use a URL shortener first."
                     onChange={ handleOnChange }
                 />
             </label>
@@ -92,7 +113,7 @@ const MakeProposal = () => {
                     styles.widthMax,
                     styles.dInlineBlock,
                 ) }>
-                    Write a short description
+                    Write a short description (Max 180)
                 </span>
                 <textarea
                     spellCheck='true'
