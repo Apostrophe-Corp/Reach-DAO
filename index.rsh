@@ -226,7 +226,7 @@ export const main = Reach.App(() => {
                 InformFront.that(state.pad('contributed'), num1, num2);
                 return keepGoing;
             })
-            .api(Voters., (fNum, sNum, notify) => {
+            .api(Voters.timedOut, (fNum, sNum, notify) => {
                 notify(null);
                 const num1 = fNum;
                 const num2 = sNum;
