@@ -204,7 +204,7 @@ export const main = Reach.App(() => {
         }
         transfer(balance()).to(Deployer);
     } else {
-        const [keepGoing, stall] = parallelReduce([true, 0])
+        const keepGoing = parallelReduce(true)
             .invariant(balance() == 0)
             .while(keepGoing != false)
             .api(Voters.creating, (obj, notify) => {
@@ -219,7 +219,7 @@ export const main = Reach.App(() => {
                     proposalObject.owner,
                     proposalObject.contractInfo
                 );
-                return [keepGoing, stall];
+                return keepGoing;
             })
             .api(Voters.upvoted, (fNum, sNum, notify) => {
                 notify(null);
@@ -227,7 +227,7 @@ export const main = Reach.App(() => {
                 const num1 = fNum;
                 const num2 = sNum;
                 InformFront.that(state.pad('upvoted'), num1, num2);
-                return [keepGoing, stall];
+                return keepGoing;
             })
             .api(Voters.downvoted, (fNum, sNum, notify) => {
                 notify(null);
@@ -235,7 +235,7 @@ export const main = Reach.App(() => {
                 const num1 = fNum;
                 const num2 = sNum;
                 InformFront.that(state.pad('downvoted'), num1, num2);
-                return [keepGoing, stall];
+                return keepGoing;
             })
             .api(Voters.contributed, (fNum, sNum, notify) => {
                 notify(null);
@@ -243,7 +243,7 @@ export const main = Reach.App(() => {
                 const num1 = fNum;
                 const num2 = sNum;
                 InformFront.that(state.pad('contributed'), num1, num2);
-                return [keepGoing, stall];
+                return keepGoing;
             })
             .api(Voters.timedOut, (fNum, sNum, notify) => {
                 notify(null);
@@ -251,7 +251,7 @@ export const main = Reach.App(() => {
                 const num1 = fNum;
                 const num2 = sNum;
                 InformFront.that(state.pad('timedOut'), num1, num2);
-                return [keepGoing, stall];
+                return keepGoing;
             });
     }
     commit();

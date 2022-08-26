@@ -24,20 +24,6 @@ const MakeProposal = () => {
 
         await makeProposal(proposal);
         setViews({ view: "Proposals", wrapper: "ProposalWrapper" });
-        // Update the global proposal state
-        // setProposals([...proposals, {
-        //     id: proposals.reduce((a, b) => a.id > b.id ? a.id : b.id) + 1,
-        //     title: inputs['title'],
-        //     link: inputs['link'],
-        //     description: inputs['description'],
-        //     contract: await makeProposal(proposal),
-        //     owner: user.account,
-        //     upvotes: 0,
-        //     downvotes: 0,
-        //     contribs: 0,
-        //     timedOut: false,
-        //     didPass: false,
-        // }]);
     };
 
     return (
