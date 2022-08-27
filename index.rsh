@@ -16,23 +16,16 @@ const checkStatus = (upVotes, downVotes) => {
     // If the down votes are greater than the up votes after the timeout then the project failed
     if (downVotes > upVotes) {
         return NOT_PASSED;
+    } else if (upVotes == downVotes) {
+        return NOT_PASSED
     } else {
-        // If the difference between the up votes and down votes is less then or equal to 30% of the amount of up votes then the project also fails
-        if ((((upVotes - downVotes) / upVotes) * 100) <= 30) {
-            return NOT_PASSED;
-        } else {
-            // If the difference is more than 30% of the up votes then the project passes
-            return PASSED;
-        }
+        return PASSED
     }
 };
 
-// This should be the guide
-assert(checkStatus(76, 72) == NOT_PASSED); // Percentage difference is 5.26%, less than 30%. Project NOT_PASSED
-assert(checkStatus(1357, 767) == PASSED); // Percentage difference is 43.47%, greater than 30%. Project PASSED
-assert(checkStatus(10, 45) == NOT_PASSED); // Down votes less than up votes. Project NOT_PASSED
-assert(checkStatus(100, 70) == NOT_PASSED); // Percentage difference is exactly 30%, must be greater by at least 1%. Project NOT_PASSED
-assert(checkStatus(100, 69) == PASSED); // Percentage difference is 31%, greater than 30%. Project PASSED
+assert(checkStatus(100, 100) == NOT_PASSED);
+assert(checkStatus(50, 100) == NOT_PASSED);
+assert(checkStatus(100, 50) == PASSED);
 
 // Result always be either PASSED or NOT_PASSED, nothing else
 forall(UInt, upVotes =>
