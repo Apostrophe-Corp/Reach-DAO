@@ -110,7 +110,7 @@ const ReachContextProvider = ({ children }) => {
         try {
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
             const upvotes = await ctc.apis.Voters.upvote();
-            await ctc.apis.Voters.upvoted(id, parseInt(upvotes));
+            await contractInstance.apis.Voters.upvoted(id, parseInt(upvotes));
         } catch (error) {
             console.log({ error });
         }
@@ -120,7 +120,7 @@ const ReachContextProvider = ({ children }) => {
         try {
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
             const downvotes = await ctc.apis.Voters.downvote();
-            await ctc.apis.Voters.downvoted(id, parseInt(downvotes));
+            await contractInstance.apis.Voters.downvoted(id, parseInt(downvotes));
         } catch (error) {
             console.log({ error });
         }
@@ -131,7 +131,7 @@ const ReachContextProvider = ({ children }) => {
         try {
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
             const contribs = await ctc.apis.Voters.contribute(reach.parseCurrency(amount));
-            await ctc.apis.Voters.contributed(id, parseInt(contribs));
+            await contractInstance.apis.Voters.contributed(id, parseInt(contribs));
         } catch (error) {
             console.log({ error });
         }
