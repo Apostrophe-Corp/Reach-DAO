@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
     loadStdlib,
-    ALGO_MyAlgoConnect as MyAlgoConnect
+    ALGO_WalletConnect as WalletConnect
 } from "@reach-sh/stdlib";
 import * as backend from "../build/index.main.mjs";
 import { fmtClasses } from "../hooks/fmtClasses";
@@ -12,7 +12,7 @@ const reach = loadStdlib(process.env);
 reach.setWalletFallback(
     reach.walletFallback({
         providerEnv: "TestNet",
-        MyAlgoConnect,
+        WalletConnect,
     })
 );
 
@@ -26,8 +26,8 @@ const ReachContextProvider = ({ children }) => {
         standardUnit,
     });
     const [views, setViews] = useState({
-        view: "Proposals",
-        wrapper: "ProposalWrapper",
+        view: "ConnectAccount",
+        wrapper: "AppWrapper",
     });
 
     const [user, setUser] = useState({
@@ -38,56 +38,41 @@ const ReachContextProvider = ({ children }) => {
     const [contract, setContract] = useState(null);
     const [contractInstance, setContractInstance] = useState(null);
     const [deadline, setDeadline] = useState(defaultDeadline);
-    const [proposals, setProposals] = useState([
-        {
-            id: 1,
-            title: 'Proposal 1',
-            link: 'https://github.com/Aro1914/AroTable/blob/main/README.md',
-            description: `A self-sorting number data structure`,
-            owner: 'someUserAddress',
-            contract: "someContractString",
-        },
-        {
-            id: 2,
-            title: 'Proposal 2',
-            link: 'https://github.com/Aro1914/Coffee-Shop/blob/main/README.md',
-            description: `Not your regular coffee shop`,
-            owner: 'someUserAddress',
-            contract: "someContractString",
-        },
-        {
-            id: 3,
-            title: 'Proposal 3',
-            link: 'https://github.com/Aro1914/Trivia-API/blob/main/README.md',
-            description: `A quiz API`,
-            owner: 'someUserAddress',
-            contract: "someContractString",
-        },
-        {
-            id: 4,
-            title: 'Proposal 4',
-            link: 'https://github.com/Aro1914/Fyyur-Project/blob/main/README.md',
-            description: `A platform for musical artists to book musical venues`,
-            owner: 'someUserAddress',
-            contract: "someContractString",
-        },
-        {
-            id: 5,
-            title: 'Proposal 5',
-            link: 'https://github.com/Aro1914/Rock-Paper-Scissors-with-Reach/blob/main/README.md',
-            description: `An implementation of the fun but sometimes intense game of Rock, Paper, Scissors`,
-            owner: 'someUserAddress',
-            contract: "someContractString",
-        },
-        {
-            id: 6,
-            title: 'Proposal 6',
-            link: 'https://github.com/AroTable-For-Server-Side/AroTable/blob/main/README.md',
-            description: `A self-sorting number data structure (For Server Side)`,
-            owner: 'someUserAddress',
-            contract: "someContractString",
-        },
-    ]);
+    const [proposals, setProposals] = useState([]);
+
+    /**
+     * Sorts an array of objects by a property present one level deep, in any object in the array. If successful, returns the sorted array of objects, else the original array is returned.
+     * @param {Array<Object>} arrayOfObjects The array of objects to be sorted
+     * @param {String} property The name of the property to be sorted by.
+     * @returns {Array<Object>} A sorted array of objects, if sorting was successful, otherwise returns the original array.
+     */
+    const sortArrayOfObjects = (arrayOfObjects, property) => {
+        if (!arrayOfObjects) return arrayOfObjects;
+        if (!Array.isArray(arrayOfObjects)) return arrayOfObjects;
+        if (arrayOfObjects.length <= 1) return arrayOfObjects;
+        let isInt = false;
+        return arrayOfObjects.map((el, index) => {
+            isInt = !isNaN(el?.[property]);
+            return !isInt ?
+                `${el?.[property]?.[0]?.toUpperCase()?.concat(el?.[property]?.slice(1))}^-.-^${index}` :
+                `${el?.[property]}^-.-^${index}`;
+        })?.sort(isInt ? (a, b) => Number(a?.split('^-.-^')?.[0]) - Number(b?.split('^-.-^')?.[0]) : undefined)?.map(el => arrayOfObjects[el?.split('^-.-^')?.[1]]);
+    };
+
+    /**
+     * It should return the bare string value without null characters
+     * @param {String} byte A string padded with null values
+     * @returns {String} A bare string without null characters
+     */
+    const noneNull = (byte) => {
+        let string = '', i = 0;
+        for (i; i < byte.length; i++) {
+            if (String(byte[i]) !== String("\u0000")) {
+                string += byte[i];
+            }
+        }
+        return string;
+    };
 
     const connectAccount = async () => {
         const account = await reach.getDefaultAccount();
@@ -100,15 +85,6 @@ const ReachContextProvider = ({ children }) => {
         setViews({ view: "DeployerOrAttacher", wrapper: "AppWrapper" });
     };
 
-    const fundAccount = async (fundAmount) => {
-        await reach.fundFromFaucet(user.account, reach.parseCurrency(fundAmount ?? defaults.defaultFundAmt));
-        setViews({ view: "DeployerOrAttacher", wrapper: "AppWrapper" });
-    };
-
-    const skipFundAccount = async () => {
-        setViews({ view: "DeployerOrAttacher", wrapper: "AppWrapper" });
-    };
-
     const selectAttacher = () => {
         setViews({ view: "Attach", wrapper: "AttacherWrapper" });
     };
@@ -117,62 +93,64 @@ const ReachContextProvider = ({ children }) => {
         setViews({ view: "Deploy", wrapper: "DeployerWrapper" });
     };
 
-    const commonInteract = {
-        ...reach.hasRandom
-    };
-
-    const deploy = async () => {
-        setViews({ view: "Deploying", wrapper: "DeployerWrapper" });
-        const ctc = user.account.contract(backend);
-        setContractInstance(ctc);
-        setViews({ ...views, view: "Deploying" });
-        ctc.p.Deployer(DeployerInteract);
-        const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
-        console.log(ctcInfoStr);
-        setContract({ ctcInfoStr });
-        setViews({ ...views, view: "Deployed" });
-    };
-
-    // TODO create a function to add to the Map of proposals stored in our contract;
-    const updateProposals = () => {
-    };
-
-    // const timeoutProposal () => {
-    // This will delete the timeoutProposal from the database or global state
-    // }
-
     const attach = async (ctcInfoStr) => {
         try {
-            const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
             setViews({ view: "Attaching", wrapper: "AttacherWrapper" });
-            ctc.p.Attacher(AttacherInteract);
+            const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
+            setContractInstance(ctc);
+            setContract({ ctcInfoStr });
+            ctc.events.create.monitor(createProposal);
+            ctc.events.that.monitor(acknowledge);
+            setViews({ view: "Proposals", wrapper: "ProposalWrapper" });
         } catch (error) {
             console.log({ error });
         }
     };
 
     // TODO implement the logic to send a contribution, positive or negative
-    const connectAndUpvote = async (ctcInfoStr) => {
+    const connectAndUpvote = async (id, ctcInfoStr) => {
         try {
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
-            ctc.apis.Voter.upvote();
+            const upvotes = await ctc.apis.Voters.upvote();
+            await contractInstance.apis.Voters.upvoted(id, parseInt(upvotes));
         } catch (error) {
             console.log({ error });
         }
     };
 
-    const connectAndDownvote = async (ctcInfoStr) => {
+    const connectAndDownvote = async (id, ctcInfoStr) => {
         try {
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
-            ctc.apis.Voter.downvote();
+            const downvotes = await ctc.apis.Voters.downvote();
+            await contractInstance.apis.Voters.downvoted(id, parseInt(downvotes));
         } catch (error) {
             console.log({ error });
         }
     };
 
     // TODO figure out the use of this later
-    const makeContribution = async (x) => {
-        // 
+    const makeContribution = async (amount, id, ctcInfoStr) => {
+        try {
+            const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
+            const contribs = await ctc.apis.Voters.contribute(reach.parseCurrency(amount));
+            await contractInstance.apis.Voters.contributed(id, parseInt(contribs));
+        } catch (error) {
+            console.log({ error });
+        }
+    };
+
+    const connectAndClaimRefund = async (ctcInfoStr) => {
+        try {
+            const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
+            const didRefund = await ctc.apis.Voters.claimRefund();
+            if (didRefund) {
+                alert('Refund Success');
+            } else {
+                alert("It seems you don't have funds to claim, did you contribute to this proposal?");
+            }
+        } catch (error) {
+            console.log({ error });
+        }
     };
 
     const confirmContribution = async () => {
@@ -180,39 +158,156 @@ const ReachContextProvider = ({ children }) => {
     };
 
     const DeployerInteract = {
-        ...commonInteract,
-        deadline,
-        getProposal: () => {
-            // TODO
-            // return an Object;
+        getProposal: {
+            id: 1,
+            title: 'AroTable',
+            link: 'https://github.com/Aro1914/AroTable/blob/main/README.md',
+            description: `A self-sorting number data structure`,
+            owner: user.account,
+            deadline,
+            numMembers: 5,
+            isProposal: false,
+        },
+    };
+
+    // TODO create a function to add to the Map of proposals stored in our contract;
+    const updateProposals = async ({ when, what }) => {
+        await contractInstance.apis.Voters.created({
+            id: parseInt(what[0]),
+            title: noneNull(what[1]),
+            link: noneNull(what[2]),
+            description: noneNull(what[3]),
+            owner: noneNull(what[4]),
+            contractInfo: what[5],
+        });
+        console.log(what[5]);
+    };
+
+    const createProposal = ({ when, what }) => {
+        const currentProposals = proposals;
+        currentProposals.push({
+            id: parseInt(what[0]),
+            title: noneNull(what[1]),
+            link: noneNull(what[2]),
+            description: noneNull(what[3]),
+            owner: noneNull(what[4]),
+            contract: JSON.stringify(what[5]),
+            upvotes: 0,
+            downvotes: 0,
+            contribs: 0,
+            timedOut: false,
+            didPass: false,
+        });
+        setProposals(proposals => ([...currentProposals]));
+        console.log(what[5]);
+    };
+
+    const acknowledge = ({ when, what }) => {
+        const ifState = x => x.padEnd(20, '\u0000');
+        switch (what[0]) {
+            case ifState('upvoted'):
+                const upProposals = proposals.map(el => {
+                    if (Number(el.id) === Number(parseInt(what[1]))) {
+                        el['upvotes'] = parseInt(what[2]);
+                    }
+                    return el;
+                });
+                setProposals(proposals => ([...upProposals]));
+                break;
+            case ifState('downvoted'):
+                const downProposals = proposals.map(el => {
+                    if (Number(el.id) === Number(parseInt(what[1]))) {
+                        el['downvotes'] = parseInt(what[2]);
+                    }
+                    return el;
+                });
+                setProposals(proposals => ([...downProposals]));
+                break;
+            case ifState('contributed'):
+                const conProposals = proposals.map(el => {
+                    if (Number(el.id) === Number(parseInt(what[1]))) {
+                        el['contribs'] = parseInt(what[2]);
+                    }
+                    return el;
+                });
+                setProposals(proposals => ([...conProposals]));
+                break;
+            case ifState('timedOut'):
+                if (parseInt(what[2])) {
+                    const pProposals = proposals.map(el => {
+                        if (Number(el.id) === Number(parseInt(what[1]))) {
+                            el['timedOut'] = true;
+                            el['didPass'] = true;
+                        }
+                        return el;
+                    });
+                    setProposals(proposals => ([...pProposals]));
+                } else {
+                    const fProposals = proposals.map(el => {
+                        if (Number(el.id) === Number(parseInt(what[1]))) {
+                            el['timedOut'] = true;
+                            el['didPass'] = false;
+                        }
+                        return el;
+                    });
+                    setProposals(proposals => ([...fProposals]));
+                }
+                break;
+            default:
+                alert('Unhandled error..');
+                break;
         }
     };
 
-    const makeProposal = async () => {
-        const proposalSetup = async () => {
-            // TODO implement the interact functionality
-            /**
-             * Plans to set a deadline for a proposal upon creation
-             * Although it may seem a deadline is would be kinda tricky to implement
-             * */
-            const deadline = { ETH: 1000, ALGO: 10000, CFX: 100000 }[reach.connector];
-            const ctc = user.account.contract(backend);
-            setViews({ view: "Deploying", wrapper: "ProposalWrapper" });
-            ctc.p.Deployer({ ...DeployerInteract, deadline: deadline });
-            const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
-            console.log(ctcInfoStr);
-            // The contract string should at this point be sent to a server for safe keeping to be attached to at a later date on a random user's device
-            setContract({ ctcInfoStr });
-            setViews({ ...views, view: "Confirmed" });
-            return ctcInfoStr;
-        };
-
-        setViews({ ...views, view: "Loading" });
-        await proposalSetup();
+    const timeoutProposal = async ({ when, what }) => {
+        const ifState = x => x.padEnd(20, "\u0000");
+        switch (what[0]) {
+            case ifState('passed'):
+                await contractInstance.apis.Voters.timedOut(parseInt(what[1]), 1);
+                break;
+            case ifState('failed'):
+                await contractInstance.apis.Voters.timedOut(parseInt(what[1]), 0);
+                break;
+            default:
+                alert('Unhandled error..');
+                break;
+        }
     };
 
-    const AttacherInteract = {
-        ...commonInteract,
+    const deploy = async () => {
+        setViews({ view: "Deploying", wrapper: "DeployerWrapper" });
+        const ctc = user.account.contract(backend);
+        setContractInstance(ctc);
+        console.log('Got here');
+        const interact = {
+            ...DeployerInteract,
+        };
+        ctc.p.Deployer(interact);
+        const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
+        ctc.events.create.monitor(createProposal);
+        ctc.events.that.monitor(acknowledge);
+        setContract({ ctcInfoStr });
+        console.log(ctcInfoStr);
+        setViews({ view: "Deployed", wrapper: "DeployerWrapper" });
+    };
+
+    const makeProposal = async (proposal) => {
+        const proposalSetup = async () => {
+            // TODO implement the interact functionality
+            const deadline = { ETH: 1000, ALGO: 10000, CFX: 100000 }[reach.connector];
+            const ctc = user.account.contract(backend);
+            ctc.p.Deployer({
+                getProposal: {
+                    ...proposal,
+                    deadline: deadline,
+                    numMembers: 5,
+                    isProposal: true,
+                }
+            });
+            ctc.events.log.monitor(timeoutProposal);
+            ctc.events.created.monitor(updateProposals);
+        };
+        await proposalSetup();
     };
 
     const ReachContextValues = {
@@ -225,12 +320,11 @@ const ReachContextProvider = ({ children }) => {
         // Misc
         contract,
         deadline,
+        sortArrayOfObjects,
 
         // Accounts
         user,
-        fundAccount,
         connectAccount,
-        skipFundAccount,
         deploy,
 
         // Participants
@@ -247,8 +341,12 @@ const ReachContextProvider = ({ children }) => {
 
         // API
         // connectAndContribute,
+        setContract,
         makeContribution,
-        updateProposals,
+        connectAndUpvote,
+        connectAndDownvote,
+        connectAndClaimRefund,
+        confirmContribution,
 
         // Proposals
         proposals,
@@ -257,16 +355,16 @@ const ReachContextProvider = ({ children }) => {
 
     return (
         <ReachContext.Provider value={ ReachContextValues }>
-            <div className={ fmtClasses(styles.header) }>
+            <div className={ fmtClasses(styles.header, !contract?.ctcInfoStr ? styles.itemsCenter : '') }>
                 <div className={ fmtClasses(styles.brandContainer) }>
                     <h1>Reach DAO</h1>
                 </div>
                 <div className={ fmtClasses(styles.navContainer) }>
                     { contract?.ctcInfoStr &&
                         <ul className={ fmtClasses(styles.navList, styles.flat) }>
-                            <li className={ fmtClasses(styles.navItem) }>Info Center</li>
-                            <li className={ fmtClasses(styles.navItem) } onClick={ () => setViews({ view: 'Proposals', wrapper: 'ProposalWrapper' }) }>Proposals</li>
-                            <li className={ fmtClasses(styles.navItem) }>Bounties</li>
+                            <li className={ fmtClasses(views.view === 'InfoCenter' ? styles.navItemActive : styles.navItem) }>Info Center</li>
+                            <li className={ fmtClasses(views.view === 'Proposals' ? styles.navItemActive : styles.navItem) } onClick={ () => setViews({ view: 'Proposals', wrapper: 'ProposalWrapper' }) }>Proposals</li>
+                            <li className={ fmtClasses(views.view === 'Bounties' ? styles.navItemActive : styles.navItem) }>Bounties</li>
                         </ul> }
                 </div>
             </div>

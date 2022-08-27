@@ -1,7 +1,13 @@
 import React from "react";
+import { fmtClasses } from "../../hooks";
+import styles from "../../styles/Shared.module.css";
 
 const Attaching = () => {
-    return <div>Attaching, please wait...</div>;
+    return (
+        <div className={ fmtClasses(styles.container, styles.itemsCenter) }>
+            <h1 className={ fmtClasses(styles.infoText) }>Attaching... please wait.</h1>
+        </div>
+    );
 };
 
 export default Attaching;

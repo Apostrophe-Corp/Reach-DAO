@@ -20,7 +20,7 @@ const Deploy = () => {
                 }>
                 <button
                     className={ fmtClasses(styles.actionButton) }
-                    onClick={ () => deploy() }
+                    onClick={ async () => { await deploy(); } }
                 >Deploy</button>
             </div>
         </div>

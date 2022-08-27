@@ -13,31 +13,31 @@ const Attach = () => {
                 styles.flex,
                 styles.itemsCenter,
                 styles.widthMax,
-            )}>
-            <div className={fmtClasses(
-                styles.widthMax,
-                styles.flat,
-                styles.container,
-                styles.flex,
-                styles.itemsCenter,
-            )}>
-                <textarea
-                spellCheck='false'
-                    className={ fmtClasses(
-                        styles.field,
-                        styles.width70,
-                    ) }
-                onChange={ (e) => setCtcInfoStr(e.currentTarget.value) }
-                placeholder="Enter contract info"
-            />
-            </div>
-            <button className={ fmtClasses(
-                styles.actionButton,
-            ) }
-                disabled={ !ctcInfoStr }
-                onClick={ () => attach(ctcInfoStr) }>
-                Attach
-            </button>
+            ) }>
+                <div className={ fmtClasses(
+                    styles.widthMax,
+                    styles.flat,
+                    styles.container,
+                    styles.flex,
+                    styles.itemsCenter,
+                ) }>
+                    <textarea
+                        spellCheck='false'
+                        className={ fmtClasses(
+                            styles.field,
+                            styles.width70,
+                        ) }
+                        onChange={ (e) => setCtcInfoStr(e.currentTarget.value) }
+                        placeholder="Enter contract info"
+                    />
+                </div>
+                <button className={ fmtClasses(
+                    styles.actionButton,
+                ) }
+                    disabled={ !ctcInfoStr }
+                    onClick={ () => attach(ctcInfoStr) }>
+                    Attach
+                </button>
             </div>
         </div>
     );
