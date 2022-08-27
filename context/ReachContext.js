@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
     loadStdlib,
-    ALGO_MyAlgoConnect as MyAlgoConnect
+    ALGO_WalletConnect as WalletConnect
 } from "@reach-sh/stdlib";
 import * as backend from "../build/index.main.mjs";
 import { fmtClasses } from "../hooks/fmtClasses";
@@ -12,7 +12,7 @@ const reach = loadStdlib(process.env);
 reach.setWalletFallback(
     reach.walletFallback({
         providerEnv: "TestNet",
-        MyAlgoConnect,
+        WalletConnect,
     })
 );
 
@@ -203,17 +203,17 @@ const ReachContextProvider = ({ children }) => {
         switch (what[0]) {
             case ifState('upvoted'):
                 const uProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
-                uProposal.upvotes = parseInt(what[2]);
+                uProposal['upvotes'] = parseInt(what[2]);
                 setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[1]))), uProposal]);
                 break;
             case ifState('downvoted'):
                 const dProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
-                dProposal.downvotes = parseInt(parseInt(what[2]));
+                dProposal['downvotes'] = parseInt(parseInt(what[2]));
                 setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[2]))), dProposal]);
                 break;
             case ifState('contributed'):
                 const cProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
-                cProposal.contribs = reach.formatCurrency(parseInt(what[2]), 4);
+                cProposal['contribs'] = reach.formatCurrency(parseInt(what[2]), 4);
                 setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[1]))), cProposal]);
                 break;
             case ifState('timedOut'):
