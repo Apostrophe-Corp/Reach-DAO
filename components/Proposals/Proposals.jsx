@@ -7,7 +7,7 @@ import Contribute from "./Contribute";
 import proposal from "../../styles/Proposals.module.css";
 
 const Proposals = () => {
-    const { setContract, connectAndUpvote, connectAndDownvote, connectAndClaimRefund, proposals, sortArrayOfObjects, setViews } = useReach();
+    const { connectAndUpvote, connectAndDownvote, connectAndClaimRefund, proposals, sortArrayOfObjects, setViews, standardUnit } = useReach();
     const [page, setPage] = useState(1);
     const [pageNumbers, setPageNumbers] = useState([]);
     const [showContrib, setShowContrib] = useState(false);
@@ -110,23 +110,26 @@ const Proposals = () => {
                                             ) }
                                             >{ el.upvotes ?? 0 }</span>
                                     </div>
-                                    <div className={ fmtClasses(
+                                    <div onClick={ () => {
+                                        setShowContrib(true);
+                                    } } className={ fmtClasses(
                                         proposal.innerInteract,
                                         styles.flex,
                                         styles.widthFitContent,
                                         styles.itemsCenter,
                                         styles.directionY,
                                     ) } title='Contribute to this proposal'>
-                                        <ImGift onClick={ () => {
-                                            setShowContrib(true);
-                                        } }
+                                        <ImGift
                                             className={ fmtClasses(
                                                 proposal.contribute,
                                             ) } />
                                         <span className={ fmtClasses(
-                                            proposal.dInlineBlock
+                                            styles.dInlineBlock,
+                                            styles.tCenter,
+                                            styles.widthMax,
                                         ) }
-                                        >{ el.contribs ?? 0 }</span>
+                                        >{ el.contribs ?? 0 } <br /> <span className={ fmtClasses(
+                                            styles.tiny) }>{ standardUnit }</span></span>
                                     </div>
                                     <div onClick={ async () => {
                                         connectAndDownvote(el.id, el.contract);

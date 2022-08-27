@@ -5,29 +5,39 @@
 /* eslint-disable no-undef */
 'reach 0.1';
 
-const [isOutcome, NOT_PASSED, PASSED, INPROGRESS] = makeEnum(3);
+const [isOutcome, NOT_PASSED, PASSED] = makeEnum(2);
 
 const DEADLINE = 20;
 
 const state = Bytes(20);
 
-
-const checkStatus = (numMembers, upVotes, downVotes) => {
-    const result = downVotes > numMembers * 50 / 100 ? NOT_PASSED :
-        upVotes > numMembers * 50 / 100 ? PASSED :
-            INPROGRESS;
-    return result;
+// We no longer need the numMembers, please reflect the change
+const checkStatus = (upVotes, downVotes) => {
+    // If the down votes are greater than the up votes after the timeout then the project failed
+    if (downVotes > upVotes) {
+        return NOT_PASSED;
+    } else {
+        // If the difference between the up votes and down votes is less then or equal to 30% of the amount of up votes then the project also fails
+        if ((((upVotes - downVotes) / upVotes) * 100) <= 30) {
+            return NOT_PASSED;
+        } else {
+            // If the difference is more than 30% of the up votes then the project passes
+            return PASSED;
+        }
+    }
 };
 
-assert(checkStatus(100, 0, 51) == NOT_PASSED);
-assert(checkStatus(100, 0, 0) == INPROGRESS);
-assert(checkStatus(100, 51, 0) == PASSED);
+// This should be the guide
+assert(checkStatus(76, 72) == NOT_PASSED); // Percentage difference is 5.26%, less than 30%. Project NOT_PASSED
+assert(checkStatus(1357, 767) == PASSED); // Percentage difference is 43.47%, greater than 30%. Project PASSED
+assert(checkStatus(10, 45) == NOT_PASSED); // Down votes less than up votes. Project NOT_PASSED
+assert(checkStatus(100, 70) == NOT_PASSED); // Percentage difference is exactly 30%, must be greater by at least 1%. Project NOT_PASSED
+assert(checkStatus(100, 69) == PASSED); // Percentage difference is 31%, greater than 30%. Project PASSED
 
-
-forall(UInt, numMembers =>
-    forall(UInt, upVotes =>
-        forall(UInt, downVotes =>
-            assert(isOutcome(checkStatus(numMembers, upVotes, downVotes))))));
+// Result always be either PASSED or NOT_PASSED, nothing else
+forall(UInt, upVotes =>
+    forall(UInt, downVotes =>
+        assert(isOutcome(checkStatus(upVotes, downVotes)))));
 
 export const main = Reach.App(() => {
     setOptions({ untrustworthyMaps: true });
@@ -96,7 +106,7 @@ export const main = Reach.App(() => {
             keepGoing,
         ] = parallelReduce([0, 0, 0, 0, Deployer, true])
             .invariant(balance() == amtTotal)
-            .while(lastConsensusTime() <= end && keepGoing)
+            .while(lastConsensusTime() <= end)
             .api(Voters.upvote, (notify) => {
                 notify(upvote + 1);
                 return [upvote + 1, downvote, count, amtTotal, lastAddress, checkStatus(upvote + 1, downvote, numMembers) == INPROGRESS ? true : false];

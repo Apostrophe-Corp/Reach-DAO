@@ -226,7 +226,7 @@ const ReachContextProvider = ({ children }) => {
             case ifState('contributed'):
                 const conProposals = proposals.map(el => {
                     if (Number(el.id) === Number(parseInt(what[1]))) {
-                        el['contribs'] = parseInt(what[2]);
+                        el['contribs'] = reach.parseCurrency(what[2], 4);
                     }
                     return el;
                 });
@@ -338,6 +338,7 @@ const ReachContextProvider = ({ children }) => {
         // Attacher  
         attach,
         makeProposal,
+        standardUnit,
 
         // API
         // connectAndContribute,
