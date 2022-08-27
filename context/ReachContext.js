@@ -165,7 +165,6 @@ const ReachContextProvider = ({ children }) => {
             description: `A self-sorting number data structure`,
             owner: user.account,
             deadline,
-            numMembers: 5,
             isProposal: false,
         },
     };
@@ -294,13 +293,12 @@ const ReachContextProvider = ({ children }) => {
     const makeProposal = async (proposal) => {
         const proposalSetup = async () => {
             // TODO implement the interact functionality
-            const deadline = { ETH: 1000, ALGO: 10000, CFX: 100000 }[reach.connector];
+            const deadline = { ETH: 20, ALGO: 200, CFX: 2000 }[reach.connector];
             const ctc = user.account.contract(backend);
             ctc.p.Deployer({
                 getProposal: {
                     ...proposal,
                     deadline: deadline,
-                    numMembers: 5,
                     isProposal: true,
                 }
             });
