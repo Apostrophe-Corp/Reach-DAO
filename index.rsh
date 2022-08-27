@@ -54,11 +54,6 @@ export const main = Reach.App(() => {
         ["contractInfo", Bytes(100)]
     ]);
 
-    const InformFront = Events({
-        create: [UInt, Bytes(25), Bytes(150), Bytes(180), Address, Bytes(100)],
-        that: [state, UInt, UInt]
-    });
-
     const Voters = API('Voters', {
         upvote: Fun([], UInt),
         downvote: Fun([], UInt),
@@ -73,6 +68,8 @@ export const main = Reach.App(() => {
     });
 
     const Proposals = Events({
+        create: [UInt, Bytes(25), Bytes(150), Bytes(180), Address, Bytes(100)],
+        that: [state, UInt, UInt],
         log: [state, UInt],
         created: [UInt, Bytes(25), Bytes(150), Bytes(180), Address, Bytes(100)],
     });
@@ -113,7 +110,7 @@ export const main = Reach.App(() => {
                 return [upvote, downvote + 1, count, amtTotal, lastAddress, checkStatus(upvote, downvote + 1, numMembers) == INPROGRESS ? true : false];
             })
             .api_(Voters.contribute, (amt) => {
-                check(amt > 0, "Contribution too small")
+                check(amt > 0, "Contribution too small");
                 const payment = amt;
                 return [payment, (notify) => {
                     notify(balance());
@@ -203,7 +200,7 @@ export const main = Reach.App(() => {
                 notify(null);
                 const proposalStruct = objectRep.fromObject(obj);
                 const proposalObject = objectRep.toObject(proposalStruct);
-                InformFront.create(
+                Proposals.create(
                     proposalObject.id,
                     proposalObject.title,
                     proposalObject.link,
@@ -217,28 +214,28 @@ export const main = Reach.App(() => {
                 notify(null);
                 const num1 = fNum;
                 const num2 = sNum;
-                InformFront.that(state.pad('upvoted'), num1, num2);
+                Proposals.that(state.pad('upvoted'), num1, num2);
                 return keepGoing;
             })
             .api(Voters.downvoted, (fNum, sNum, notify) => {
                 notify(null);
                 const num1 = fNum;
                 const num2 = sNum;
-                InformFront.that(state.pad('downvoted'), num1, num2);
+                Proposals.that(state.pad('downvoted'), num1, num2);
                 return keepGoing;
             })
             .api(Voters.contributed, (fNum, sNum, notify) => {
                 notify(null);
                 const num1 = fNum;
                 const num2 = sNum;
-                InformFront.that(state.pad('contributed'), num1, num2);
+                Proposals.that(state.pad('contributed'), num1, num2);
                 return keepGoing;
             })
             .api(Voters.timedOut, (fNum, sNum, notify) => {
                 notify(null);
                 const num1 = fNum;
                 const num2 = sNum;
-                InformFront.that(state.pad('timedOut'), num1, num2);
+                Proposals.that(state.pad('timedOut'), num1, num2);
                 return keepGoing;
             });
     }
