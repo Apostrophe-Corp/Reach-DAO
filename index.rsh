@@ -42,7 +42,6 @@ export const main = Reach.App(() => {
             numMembers: UInt,
             isProposal: Bool,
         }),
-        getContract: Fun([], Bytes(100))
     });
 
     const objectRep = Struct([
@@ -51,7 +50,7 @@ export const main = Reach.App(() => {
         ["link", Bytes(150)],
         ["description", Bytes(180)],
         ["owner", Address],
-        ["contractInfo", Bytes(100)]
+        ["contractInfo", Contract]
     ]);
 
     const Voters = API('Voters', {
@@ -68,10 +67,10 @@ export const main = Reach.App(() => {
     });
 
     const Proposals = Events({
-        create: [UInt, Bytes(25), Bytes(150), Bytes(180), Address, Bytes(100)],
+        create: [UInt, Bytes(25), Bytes(150), Bytes(180), Address, Contract],
         that: [state, UInt, UInt],
         log: [state, UInt],
-        created: [UInt, Bytes(25), Bytes(150), Bytes(180), Address, Bytes(100)],
+        created: [UInt, Bytes(25), Bytes(150), Bytes(180), Address, Contract],
     });
     init();
     Deployer.only(() => {
@@ -81,11 +80,8 @@ export const main = Reach.App(() => {
 
     if (isProposal) {
         commit();
-        Deployer.only(() => {
-            const contractInfo = declassify(interact.getContract());
-        });
-        Deployer.publish(title, link, owner, id, deadline, contractInfo);
-        Proposals.created(id, title, link, description, owner, contractInfo);
+        Deployer.publish(title, link, owner, id, deadline);
+        Proposals.created(id, title, link, description, owner, getContract());
         const end = lastConsensusTime() + deadline;
         const contributors = new Map(Address, Address);
         const amtContributed = new Map(Address, UInt);

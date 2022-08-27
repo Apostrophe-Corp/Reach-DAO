@@ -11,15 +11,17 @@ const Proposals = () => {
     const [page, setPage] = useState(1);
     const [pageNumbers, setPageNumbers] = useState([]);
     const [showContrib, setShowContrib] = useState(false);
+    // const [currentProposals, setCurrentProposals] = useState(proposals.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5)));
 
-    useEffect(() => {
-        const x = [], runs = Math.ceil(proposals.length / 5);
-        let i = 0;
-        for (i; i < runs; i++) {
-            x.push(i);
-        }
-        setPageNumbers(x);
-    }, [proposals]);
+    // useEffect(() => {
+    //     const x = [], runs = Math.ceil(proposals.length / 5);
+    //     let i = 0;
+    //     for (i; i < runs; i++) {
+    //         x.push(i);
+    //     }
+    //     setPageNumbers(x);
+    //     setCurrentProposals(proposals.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5)));
+    // }, [proposals, page]);
 
     const PageNumbers = ({ index }) => {
         return (
@@ -45,7 +47,7 @@ const Proposals = () => {
             styles.gap15,
         ) }>
             {
-                sortArrayOfObjects(proposals, "id").filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5)).map((el, i) => {
+                proposals.map((el, i) => {
                     return (
                         <div key={ i } className={ fmtClasses(
                             styles.flex,

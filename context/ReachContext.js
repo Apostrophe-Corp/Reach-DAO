@@ -99,6 +99,8 @@ const ReachContextProvider = ({ children }) => {
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
             setContractInstance(ctc);
             setContract({ ctcInfoStr });
+            ctc.events.create.monitor(createProposal);
+            ctc.events.that.monitor(acknowledge);
             setViews({ view: "Proposals", wrapper: "ProposalWrapper" });
         } catch (error) {
             console.log({ error });
@@ -176,57 +178,79 @@ const ReachContextProvider = ({ children }) => {
             link: noneNull(what[2]),
             description: noneNull(what[3]),
             owner: noneNull(what[4]),
-            contractInfo: noneNull(what[5])
+            contractInfo: what[5],
         });
-        console.log(noneNull(what[5]));
+        console.log(what[5]);
     };
 
     const createProposal = ({ when, what }) => {
-        setProposals([...proposals, {
+        const currentProposals = proposals;
+        currentProposals.push({
             id: parseInt(what[0]),
             title: noneNull(what[1]),
             link: noneNull(what[2]),
             description: noneNull(what[3]),
             owner: noneNull(what[4]),
-            contract: noneNull(what[5]),
+            contract: JSON.stringify(what[5]),
             upvotes: 0,
             downvotes: 0,
             contribs: 0,
             timedOut: false,
             didPass: false,
-        }]);
-        console.log(noneNull(what[5]));
+        });
+        setProposals(proposals => ([...currentProposals]));
+        console.log(what[5]);
     };
 
     const acknowledge = ({ when, what }) => {
         const ifState = x => x.padEnd(20, '\u0000');
         switch (what[0]) {
             case ifState('upvoted'):
-                const uProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
-                uProposal['upvotes'] = parseInt(what[2]);
-                setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[1]))), uProposal]);
+                const upProposals = proposals.map(el => {
+                    if (Number(el.id) === Number(parseInt(what[1]))) {
+                        el['upvotes'] = parseInt(what[2]);
+                    }
+                    return el;
+                });
+                setProposals(proposals => ([...upProposals]));
                 break;
             case ifState('downvoted'):
-                const dProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
-                dProposal['downvotes'] = parseInt(parseInt(what[2]));
-                setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[2]))), dProposal]);
+                const downProposals = proposals.map(el => {
+                    if (Number(el.id) === Number(parseInt(what[1]))) {
+                        el['downvotes'] = parseInt(what[2]);
+                    }
+                    return el;
+                });
+                setProposals(proposals => ([...downProposals]));
                 break;
             case ifState('contributed'):
-                const cProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
-                cProposal['contribs'] = reach.formatCurrency(parseInt(what[2]), 4);
-                setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[1]))), cProposal]);
+                const conProposals = proposals.map(el => {
+                    if (Number(el.id) === Number(parseInt(what[1]))) {
+                        el['contribs'] = parseInt(what[2]);
+                    }
+                    return el;
+                });
+                setProposals(proposals => ([...conProposals]));
                 break;
             case ifState('timedOut'):
                 if (parseInt(what[2])) {
-                    const passedProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
-                    passedProposal['timedOut'] = true;
-                    passedProposal['didPass'] = true;
-                    setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[1]))), passedProposal]);
+                    const pProposals = proposals.map(el => {
+                        if (Number(el.id) === Number(parseInt(what[1]))) {
+                            el['timedOut'] = true;
+                            el['didPass'] = true;
+                        }
+                        return el;
+                    });
+                    setProposals(proposals => ([...pProposals]));
                 } else {
-                    const failedProposal = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
-                    failedProposal['timedOut'] = true;
-                    failedProposal['didPass'] = false;
-                    setProposals([...proposals.filter(el => Number(el.id) !== Number(parseInt(what[1]))), failedProposal]);
+                    const fProposals = proposals.map(el => {
+                        if (Number(el.id) === Number(parseInt(what[1]))) {
+                            el['timedOut'] = true;
+                            el['didPass'] = false;
+                        }
+                        return el;
+                    });
+                    setProposals(proposals => ([...fProposals]));
                 }
                 break;
             default:
@@ -255,12 +279,8 @@ const ReachContextProvider = ({ children }) => {
         const ctc = user.account.contract(backend);
         setContractInstance(ctc);
         console.log('Got here');
-        const getContract = () => {
-            return contract?.ctcInfoStr;
-        };
         const interact = {
             ...DeployerInteract,
-            getContract,
         };
         ctc.p.Deployer(interact);
         const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2);
@@ -276,27 +296,18 @@ const ReachContextProvider = ({ children }) => {
             // TODO implement the interact functionality
             const deadline = { ETH: 1000, ALGO: 10000, CFX: 100000 }[reach.connector];
             const ctc = user.account.contract(backend);
-            let ctcInfo = '';
-            const getContract = () => {
-                return ctcInfo;
-            };
             ctc.p.Deployer({
                 getProposal: {
                     ...proposal,
                     deadline: deadline,
                     numMembers: 5,
                     isProposal: true,
-                },
-                getContract,
+                }
             });
-            ctcInfo = JSON.stringify(await ctc.getInfo(), null, 2);
-            console.log(ctcInfo);
             ctc.events.log.monitor(timeoutProposal);
             ctc.events.created.monitor(updateProposals);
-            return ctcInfo;
         };
-        const contract = await proposalSetup();
-        return contract;
+        await proposalSetup();
     };
 
     const ReachContextValues = {
