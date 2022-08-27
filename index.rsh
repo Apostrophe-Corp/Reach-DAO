@@ -103,17 +103,16 @@ export const main = Reach.App(() => {
             count,
             amtTotal,
             lastAddress,
-            keepGoing,
-        ] = parallelReduce([0, 0, 0, 0, Deployer, true])
+        ] = parallelReduce([0, 0, 0, 0, Deployer])
             .invariant(balance() == amtTotal)
             .while(lastConsensusTime() <= end)
             .api(Voters.upvote, (notify) => {
                 notify(upvote + 1);
-                return [upvote + 1, downvote, count, amtTotal, lastAddress, checkStatus(upvote + 1, downvote, numMembers) == INPROGRESS ? true : false];
+                return [upvote + 1, downvote, count, amtTotal, lastAddress];
             })
             .api(Voters.downvote, (notify) => {
                 notify(downvote + 1);
-                return [upvote, downvote + 1, count, amtTotal, lastAddress, checkStatus(upvote, downvote + 1, numMembers) == INPROGRESS ? true : false];
+                return [upvote, downvote + 1, count, amtTotal, lastAddress];
             })
             .api_(Voters.contribute, (amt) => {
                 check(amt > 0, "Contribution too small");
@@ -128,51 +127,19 @@ export const main = Reach.App(() => {
                         amtContributed[this] = amt;
                         contributorsSet.insert(this);
                     }
-                    return [upvote, downvote, count + 1, amtTotal + amt, this, keepGoing];
+                    return [upvote, downvote, count + 1, amtTotal + amt, this];
                 }];
             })
             .timeout(absoluteTime(end), () => {
                 Deployer.publish();
                 // Proposals.log(state.pad('timeout'), id);
-                return [upvote, downvote, count, amtTotal, lastAddress, keepGoing];
+                return [upvote, downvote, count, amtTotal, lastAddress];
             });
 
-        if (checkStatus(numMembers, upvote, downvote) == PASSED) {
+        if (checkStatus(upvote, downvote) == PASSED) {
             Proposals.log(state.pad('passed'), id);
             transfer(balance()).to(owner);
-        }
-        else if (checkStatus(numMembers, upvote, downvote) == INPROGRESS) {
-            if (upvote > downvote && upvote + downvote > numMembers * 50 / 100) {
-                Proposals.log(state.pad('passed'), id);
-                transfer(balance()).to(owner);
-            } else {
-                Proposals.log(state.pad('failed'), id);
-                const fromMapAdd = (m) => fromMaybe(m, (() => lastAddress), ((x) => x));
-                const fromMapAmt = (m) => fromMaybe(m, (() => 0), ((x) => x));
-                commit();
-                Deployer.publish();
-                const [newCount, currentBalance] = parallelReduce([count, balance()])
-                    .invariant(balance() == currentBalance)
-                    .while(newCount > 0 && currentBalance > 0)
-                    .api(Voters.claimRefund, (notify => {
-                        if (balance() >= fromMapAmt(amtContributed[this]) && contributorsSet.member(this)) {
-                            transfer(fromMapAmt(amtContributed[this])).to(
-                                fromMapAdd(contributors[this])
-                            );
-                            contributorsSet.remove(this);
-                            Proposals.log(state.pad('refundPassed'), id);
-                            notify(true);
-                            return [newCount - 1, balance()];
-                        } else {
-                            Proposals.log(state.pad('refundFailed'), id);
-                            notify(false);
-                            return [newCount, balance()];
-                        }
-                    }));
-
-            }
-
-        } else {
+        }else {
             Proposals.log(state.pad('failed'), id);
             const fromMapAdd = (m) => fromMaybe(m, (() => lastAddress), ((x) => x));
             const fromMapAmt = (m) => fromMaybe(m, (() => 0), ((x) => x));
