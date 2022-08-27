@@ -99,7 +99,7 @@ export const main = Reach.App(() => {
                 return [upvote, downvote + 1, amtTotal];
             })
             .api_(Voters.contribute, (amt) => {
-                check(amt <= 0, "Contribution too small");
+                check(amt > 0, "Contribution too small");
                 const payment = amt;
                 return [payment, (notify) => {
                     notify(balance());
