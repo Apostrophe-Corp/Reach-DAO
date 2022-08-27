@@ -252,6 +252,10 @@ const ReachContextProvider = ({ children }) => {
                     setProposals(proposals => ([...fProposals]));
                 }
                 break;
+            case ifState('projectDown'):
+                const remainingProposals = proposals.filter(el => (Number(el.id) !== Number(parseInt(what[1]))));
+                setProposals(proposals => ([...remainingProposals]));
+                break;
             default:
                 alert('Unhandled error..');
                 break;
@@ -266,6 +270,9 @@ const ReachContextProvider = ({ children }) => {
                 break;
             case ifState('failed'):
                 await contractInstance.apis.Voters.timedOut(parseInt(what[1]), 0);
+                break;
+            case ifState('down'):
+                await contractInstance.apis.Voters.projectDown(parseInt(what[1]));
                 break;
             default:
                 alert('Unhandled error..');

@@ -26,14 +26,16 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  overflow-x: scroll;
+  /* overflow-x: scroll; */
   width: 100%;
+  /* scrollbar-width: none !important; */
 }
 
 .owner {
   display: inline-block;
   width: fit-content;
   text-align: left;
+  word-break: break-all;
 }
 
 .readMe {
