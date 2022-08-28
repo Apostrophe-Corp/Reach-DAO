@@ -26,9 +26,7 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  /* overflow-x: scroll; */
   width: 100%;
-  /* scrollbar-width: none !important; */
 }
 
 .owner {
