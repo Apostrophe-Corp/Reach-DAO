@@ -165,7 +165,6 @@ const ReachContextProvider = ({ children }) => {
             description: `A self-sorting number data structure`,
             owner: user.account,
             deadline,
-            numMembers: 5,
             isProposal: false,
         },
     };
@@ -226,7 +225,7 @@ const ReachContextProvider = ({ children }) => {
             case ifState('contributed'):
                 const conProposals = proposals.map(el => {
                     if (Number(el.id) === Number(parseInt(what[1]))) {
-                        el['contribs'] = parseInt(what[2]);
+                        el['contribs'] = reach.formatCurrency(what[2], 4);
                     }
                     return el;
                 });
@@ -253,6 +252,10 @@ const ReachContextProvider = ({ children }) => {
                     setProposals(proposals => ([...fProposals]));
                 }
                 break;
+            case ifState('projectDown'):
+                const remainingProposals = proposals.filter(el => Number(el.id) !== Number(parseInt(what[1])));
+                setProposals(proposals => ([...remainingProposals]));
+                break;
             default:
                 alert('Unhandled error..');
                 break;
@@ -267,6 +270,9 @@ const ReachContextProvider = ({ children }) => {
                 break;
             case ifState('failed'):
                 await contractInstance.apis.Voters.timedOut(parseInt(what[1]), 0);
+                break;
+            case ifState('down'):
+                await contractInstance.apis.Voters.projectDown(parseInt(what[1]));
                 break;
             default:
                 alert('Unhandled error..');
@@ -294,13 +300,12 @@ const ReachContextProvider = ({ children }) => {
     const makeProposal = async (proposal) => {
         const proposalSetup = async () => {
             // TODO implement the interact functionality
-            const deadline = { ETH: 1000, ALGO: 10000, CFX: 100000 }[reach.connector];
+            const deadline = { ETH: 20, ALGO: 200, CFX: 2000 }[reach.connector];
             const ctc = user.account.contract(backend);
             ctc.p.Deployer({
                 getProposal: {
                     ...proposal,
                     deadline: deadline,
-                    numMembers: 5,
                     isProposal: true,
                 }
             });
@@ -338,6 +343,7 @@ const ReachContextProvider = ({ children }) => {
         // Attacher  
         attach,
         makeProposal,
+        standardUnit,
 
         // API
         // connectAndContribute,

@@ -131,7 +131,9 @@ const MakeProposal = () => {
                 styles.width70,
                 styles.actionButton,
                 styles.dInlineBlock,
-            ) }>Make Proposal</button>
+            ) }
+                disabled={ !inputs?.['title'] || !inputs?.['link'] || !inputs?.['description'] }
+            >Make Proposal</button>
         </div>
     );
 };

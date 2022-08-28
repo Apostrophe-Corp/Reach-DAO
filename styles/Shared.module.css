@@ -7,6 +7,14 @@
   flex-wrap: wrap;
 }
 
+.tCenter {
+  text-align: center !important;
+}
+
+.tiny{
+  font-size: 11px !important; 
+}
+
 .dInlineBlock {
   display: inline-block !important;
 }
