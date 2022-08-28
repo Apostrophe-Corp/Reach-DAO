@@ -3,9 +3,11 @@ import {
     loadStdlib,
     ALGO_WalletConnect as WalletConnect
 } from "@reach-sh/stdlib";
+import { Helmet } from "react-helmet";
 import * as backend from "../build/index.main.mjs";
 import { fmtClasses } from "../hooks/fmtClasses";
 import styles from "../styles/MainWrapper.module.css";
+import styled from "../styles/SubWrapper.module.css";
 
 const reach = loadStdlib(process.env);
 
@@ -361,6 +363,9 @@ const ReachContextProvider = ({ children }) => {
 
     return (
         <ReachContext.Provider value={ ReachContextValues }>
+            <Helmet>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            </Helmet>
             <div className={ fmtClasses(styles.header, !contract?.ctcInfoStr ? styles.itemsCenter : '') }>
                 <div className={ fmtClasses(styles.brandContainer) }>
                     <h1>Reach DAO</h1>
@@ -368,12 +373,22 @@ const ReachContextProvider = ({ children }) => {
                 <div className={ fmtClasses(styles.navContainer) }>
                     { contract?.ctcInfoStr &&
                         <ul className={ fmtClasses(styles.navList, styles.flat) }>
-                            <li className={ fmtClasses(views.view === 'InfoCenter' ? styles.navItemActive : styles.navItem) }>Info Center</li>
+                            <li className={ fmtClasses(views.view === 'InfoCenter' ? styles.navItemActive : styles.navItem) } onClick={ () => setViews({ view: 'InfoCenter', wrapper: 'InfoWrapper' }) }>Info Center</li>
                             <li className={ fmtClasses(views.view === 'Proposals' ? styles.navItemActive : styles.navItem) } onClick={ () => setViews({ view: 'Proposals', wrapper: 'ProposalWrapper' }) }>Proposals</li>
-                            <li className={ fmtClasses(views.view === 'Bounties' ? styles.navItemActive : styles.navItem) }>Bounties</li>
+                            <li className={ fmtClasses(views.view === 'Bounties' ? styles.navItemActive : styles.navItem) } onClick={ () => setViews({ view: 'Bounties', wrapper: 'BountyWrapper' }) }>Bounties</li>
                         </ul> }
                 </div>
             </div>
+            { (views.view === 'InfoCenter' || views.view === 'Proposals' || views.view === 'Bounties') &&
+                <div className={ fmtClasses(
+                    styled.welcomeDiv,
+                    views.view === 'InfoCenter' ? styled.infoWelcome : views.view === 'Proposals' ? styled.proposalWelcome : views.view === 'Bounties' ? styled.bountyWelcome : '',
+                ) } >
+                    <div className={ fmtClasses(styled.welcomeInner) } >
+                        <h1 className={ fmtClasses(styled.welcomeText) } >{ views.view === 'InfoCenter' ? `Welcome!` : views.view === 'Proposals' ? `Get the Chance` : views.view === 'Bounties' ? `Lets Hack` : '' }</h1>
+                        <h2 className={ fmtClasses(styled.subWelcomeText) } >{ views.view === 'InfoCenter' ? `To the new Hub.` : views.view === 'Proposals' ? `To make your dreams come true!` : views.view === 'Bounties' ? `And claim the bounty...` : '' }</h2>
+                    </div>
+                </div> }
             <div className={ fmtClasses(styles.childrenContainer) } id="root">{ children }</div>
         </ReachContext.Provider>
     );

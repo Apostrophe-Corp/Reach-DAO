@@ -1,0 +1,80 @@
+.flat {
+  composes: flat from "./MainWrapper.module.css";
+  width: 100%;
+}
+
+.label {
+  display: none;
+  padding: 5px 50px;
+  margin: 0 auto;
+  z-index: 1000;
+  border-bottom-right-radius: 50px;
+  border-bottom-left-radius: 50px;
+  background-color: var(--reachWhite);
+  color: var(--reachBlack);
+  width: fit-content;
+}
+
+.children {
+  padding: 30px 5px 5px;
+  width: max(75%, 350px);
+  margin: 0 auto;
+}
+
+.welcomeDiv {
+  height: 75vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+.infoWelcome {
+  background-image: url(./../../public/images/semiearth.jpg) !important;
+}
+
+.proposalWelcome {
+  background-image: url(./../../public/images/contract.jpg) !important;
+}
+
+.bountyWelcome {
+  background-image: url(./../../public/images/btresurecave.jpg) !important;
+}
+
+.welcomeInner {
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  padding: 20px 20px;
+  text-shadow: 2px 2px rgba(0, 0, 0, 0.538);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  background-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.551),
+    transparent
+  );
+}
+
+.welcomeText {
+  font-size: 70px;
+  margin: 0;
+  padding: 0;
+  color: var(--reachWhite);
+}
+
+.subWelcomeText {
+  font-size: 35px;
+  margin: 0;
+  padding: 0;
+  /* font-weight: bold; */
+  color: var(--reachWhite);
+}

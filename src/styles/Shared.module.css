@@ -11,8 +11,8 @@
   text-align: center !important;
 }
 
-.tiny{
-  font-size: 11px !important; 
+.tiny {
+  font-size: 11px !important;
 }
 
 .dInlineBlock {
@@ -21,6 +21,10 @@
 
 .itemsCenter {
   justify-content: center !important;
+  align-items: center !important;
+}
+
+.itemsYCenter {
   align-items: center !important;
 }
 

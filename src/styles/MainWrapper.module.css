@@ -38,20 +38,26 @@ body {
   padding: 0;
   background-color: #000 !important;
   color: var(--reachWhite) !important;
+  font-family: Arial, sans-serif !important;
 }
 
 button {
+  cursor: pointer;
   font-family: inherit;
 }
 
 .header {
   padding: 10px;
+  background-color: #000;
   width: 100%;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 2px solid var(--reachWhite);
+  position: sticky;
+  top: 0;
+  right: 0;
+  /* border-bottom: 2px solid var(--reachWhite); */
 }
 
 .flat {

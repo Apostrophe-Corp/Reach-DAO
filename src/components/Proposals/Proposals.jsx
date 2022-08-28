@@ -7,7 +7,7 @@ import Contribute from "./Contribute";
 import proposal from "../../styles/Proposals.module.css";
 
 const Proposals = () => {
-    const { connectAndUpvote, connectAndDownvote, connectAndClaimRefund, proposals, sortArrayOfObjects, setViews, standardUnit } = useReach();
+    const { connectAndUpvote, connectAndDownvote, connectAndClaimRefund, proposals, setViews, standardUnit } = useReach();
     const [page, setPage] = useState(1);
     const [pageNumbers, setPageNumbers] = useState([]);
 
