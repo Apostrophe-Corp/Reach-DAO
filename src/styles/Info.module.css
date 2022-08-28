@@ -1,0 +1,64 @@
+.briefing {
+  padding: 30px 10px;
+  gap: 10px;
+}
+
+.parts {
+  width: max(48%, 250px);
+}
+
+.rshDao {
+  height: 300px;
+  border-radius: 10px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-image: url(./../../public/images/roundearth.jpg) !important;
+}
+
+.devsText {
+  background-image: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(0, 183, 255, 0.237)
+    /* var(--theme) */
+  );
+  padding: 10px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border-radius: 10px;
+}
+
+.suhHeaders {
+  color: var(--theme);
+  padding: 0;
+  margin: 0;
+}
+
+.call {
+  background-color: rgb(248, 69, 69);
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.call:hover {
+  transform: scale(1.5, 1);
+}
+
+.tut {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lTut {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  width: calc((100% / 3) - 5px);
+  background-color: var(--theme);
+}

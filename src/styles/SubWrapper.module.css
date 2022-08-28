@@ -4,6 +4,7 @@
 }
 
 .label {
+  display: none;
   padding: 5px 50px;
   margin: 0 auto;
   z-index: 1000;
@@ -49,7 +50,7 @@
   height: 100%;
   width: 100%;
   text-align: center;
-  padding: 20px 40px;
+  padding: 20px 20px;
   text-shadow: 2px 2px rgba(0, 0, 0, 0.538);
   display: flex;
   flex-direction: column;

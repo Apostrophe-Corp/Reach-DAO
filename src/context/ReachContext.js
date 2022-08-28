@@ -385,8 +385,8 @@ const ReachContextProvider = ({ children }) => {
                     views.view === 'InfoCenter' ? styled.infoWelcome : views.view === 'Proposals' ? styled.proposalWelcome : views.view === 'Bounties' ? styled.bountyWelcome : '',
                 ) } >
                     <div className={ fmtClasses(styled.welcomeInner) } >
-                        <h1 className={ fmtClasses(styled.welcomeText) } >{ views.view === 'InfoCenter' ? `Welcome` : views.view === 'Proposals' ? `Get the Chance` : views.view === 'Bounties' ? `Lets Hack` : '' }</h1>
-                        <h2 className={ fmtClasses(styled.subWelcomeText) } >{ views.view === 'InfoCenter' ? `To the new Hub!` : views.view === 'Proposals' ? `To make your dreams come true!` : views.view === 'Bounties' ? `And claim the bounty...` : '' }</h2>
+                        <h1 className={ fmtClasses(styled.welcomeText) } >{ views.view === 'InfoCenter' ? `Welcome!` : views.view === 'Proposals' ? `Get the Chance` : views.view === 'Bounties' ? `Lets Hack` : '' }</h1>
+                        <h2 className={ fmtClasses(styled.subWelcomeText) } >{ views.view === 'InfoCenter' ? `To the new Hub.` : views.view === 'Proposals' ? `To make your dreams come true!` : views.view === 'Bounties' ? `And claim the bounty...` : '' }</h2>
                     </div>
                 </div> }
             <div className={ fmtClasses(styles.childrenContainer) } id="root">{ children }</div>

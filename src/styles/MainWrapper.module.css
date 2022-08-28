@@ -56,7 +56,7 @@ button {
   position: sticky;
   top: 0;
   right: 0;
-  border-bottom: 2px solid var(--reachWhite);
+  /* border-bottom: 2px solid var(--reachWhite); */
 }
 
 .flat {
