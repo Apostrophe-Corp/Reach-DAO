@@ -300,7 +300,7 @@ const ReachContextProvider = ({ children }) => {
     const makeProposal = async (proposal) => {
         const proposalSetup = async () => {
             // TODO implement the interact functionality
-            const deadline = { ETH: 20, ALGO: 200, CFX: 2000 }[reach.connector];
+            const deadline = { ETH: 10, ALGO: 100, CFX: 1000 }[reach.connector];
             const ctc = user.account.contract(backend);
             ctc.p.Deployer({
                 getProposal: {
