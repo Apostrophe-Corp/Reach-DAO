@@ -253,7 +253,7 @@ const ReachContextProvider = ({ children }) => {
                 }
                 break;
             case ifState('projectDown'):
-                const remainingProposals = proposals.filter(el => (Number(el.id) !== Number(parseInt(what[1]))));
+                const remainingProposals = proposals.filter(el => Number(el.id) !== Number(parseInt(what[1])));
                 setProposals(proposals => ([...remainingProposals]));
                 break;
             default:
