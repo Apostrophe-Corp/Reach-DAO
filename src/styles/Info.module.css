@@ -1,10 +1,15 @@
 .briefing {
   padding: 30px 10px;
-  gap: 10px;
 }
 
 .parts {
-  width: max(48%, 250px);
+  width: max(48%, 300px);
+}
+
+.list {
+  line-height: 25px;
+  list-style: square !important;
+  padding: 0 10px !important;
 }
 
 .rshDao {
@@ -20,8 +25,7 @@
   background-image: linear-gradient(
     to bottom,
     transparent,
-    rgba(0, 183, 255, 0.237)
-    /* var(--theme) */
+    rgba(0, 183, 255, 0.237) /* var(--theme) */
   );
   padding: 10px;
   width: 100%;
@@ -39,26 +43,38 @@
 .call {
   background-color: rgb(248, 69, 69);
   padding: 10px;
+  color: var(--theme);
+  font-size: 16px;
+  font-weight: bold;
   border-radius: 5px;
 }
 
 .call:hover {
-  transform: scale(1.5, 1);
+  transform: scale(1.05, 1.05);
 }
 
 .tut {
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
+  padding: 30px 0;
 }
 
 .lTut {
+  height: 200px;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   width: calc((100% / 3) - 5px);
   background-color: var(--theme);
+  border-radius: 10px;
+  padding: 0;
+}
+
+.bgDark {
+  background-color: #000;
+  color: rgb(248, 69, 69);
+}
+
+.tSmall {
+  font-size: 14px;
+  padding: 10px;
 }
