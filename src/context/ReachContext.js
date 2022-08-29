@@ -8,6 +8,7 @@ import * as backend from "../build/index.main.mjs";
 import { fmtClasses } from "../hooks/fmtClasses";
 import styles from "../styles/MainWrapper.module.css";
 import styled from "../styles/SubWrapper.module.css";
+import style from "../styles/Shared.module.css";
 
 const reach = loadStdlib(process.env);
 
@@ -382,6 +383,21 @@ const ReachContextProvider = ({ children }) => {
                     </div>
                 </div> }
             <div className={ fmtClasses(styles.childrenContainer) } id="root">{ children }</div>
+            <div className={ fmtClasses(
+                style.widthMax,
+                style.flex,
+                style.itemsCenter,
+                style.tCenter,
+                styles.footer,
+            ) }>
+                <span className={ fmtClasses(
+                    style.widthMax,
+                    style.dInlineBlock,
+                    style.tCenter,
+                ) }>
+                    &copy; Team 18, 2022.
+                </span>
+            </div>
         </ReachContext.Provider>
     );
 };

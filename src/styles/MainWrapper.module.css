@@ -35,7 +35,7 @@ ol {
 
 body {
   margin: 0;
-  padding: 0;
+  padding: 0 0 50px 0;
   background-color: #000 !important;
   color: var(--reachWhite) !important;
   font-family: Arial, sans-serif !important;
@@ -118,4 +118,13 @@ button {
 .itemsCenter {
   justify-content: center !important;
   align-items: center !important;
+}
+
+.footer {
+  position: fixed;
+  padding: 10px;
+  background-color: #fff;
+  color: #000;
+  bottom: 0;
+  right: 0;
 }
