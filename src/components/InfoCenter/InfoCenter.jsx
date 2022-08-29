@@ -31,7 +31,7 @@ const InfoCenter = () => {
                         styles.tCenter,
                     ) }>
                         A hub for Web3 professionals.<br /><br />We connect talent with work, tutorials, and ideas.<br />
-                        The community gets to have their ideas built and Reach Lang developers get to gain experience working on real world projects, gaining experience and up to date information about everything Reach.
+                        The community gets to have their ideas built and Reach Lang developers get to gain experience working on real world projects, and up to date information about everything Reach.
                     </p>
                 </div>
             </div>
@@ -86,7 +86,7 @@ const InfoCenter = () => {
                     styles.spaceXEvenly,
                     info.tut
                 ) }>
-                    <a href="https://docs.reach.sh/tut/wfs" target="_blank" rel="noreferrer"
+                    <a href="https://docs.reach.sh/tut/rps" target="_blank" rel="noreferrer"
                         className={ fmtClasses(
                             styles.flat,
                             styles.flex,
@@ -104,7 +104,7 @@ const InfoCenter = () => {
                             </div>
                         </div>
                     </a>
-                    <a href="https://docs.reach.sh/tut/rps" target="_blank" rel="noreferrer"
+                    <a href="https://docs.reach.sh/tut/wfs" target="_blank" rel="noreferrer"
                         className={ fmtClasses(
                             styles.flat,
                             styles.flex,
