@@ -86,7 +86,7 @@ const InfoCenter = () => {
                     styles.spaceXEvenly,
                     info.tut
                 ) }>
-                    <div
+                    <a href="https://docs.reach.sh/tut/wfs" target="_blank" rel="noreferrer"
                         className={ fmtClasses(
                             styles.flat,
                             styles.flex,
@@ -103,8 +103,8 @@ const InfoCenter = () => {
                                 <span className={ fmtClasses(styles.widthMax, styles.info, info.tSmall) }>This tutorial walks through the creation of a simple decentralized application. It contains everything you need to know to build and test this application and assumes no prior experience with DApp/blockchain development of any kind.</span>
                             </div>
                         </div>
-                    </div>
-                    <div
+                    </a>
+                    <a href="https://docs.reach.sh/tut/rps" target="_blank" rel="noreferrer"
                         className={ fmtClasses(
                             styles.flat,
                             styles.flex,
@@ -113,16 +113,15 @@ const InfoCenter = () => {
                             styles.flipCard,
                             info.lTut,
                         ) }>
-                        <div className={ fmtClasses(styles.flipCardInner) }>
-                            <div className={ fmtClasses(styles.flipCardFront, info.bgDark) }>
-                                <h4>Wisdom for Sale</h4>
-                            </div>
+                        <div className={ fmtClasses(styles.flipCardInner) }> <div className={ fmtClasses(styles.flipCardFront, info.bgDark) }>
+                            <h4>Wisdom for Sale</h4>
+                        </div>
                             <div className={ fmtClasses(styles.flipCardBack, info.bgDark) }>
                                 <span className={ fmtClasses(styles.widthMax, styles.info, info.tSmall) }>Wisdom for Sale is a command-line and Web-based application that enables two participants (a seller and a buyer) to trade wise expressions for tokens via a Reach Decentralized Application (DApp).</span>
                             </div>
                         </div>
-                    </div>
-                    <div
+                    </a>
+                    <a href="https://docs.reach.sh/tut/rsvp" target="_blank" rel="noreferrer"
                         className={ fmtClasses(
                             styles.flat,
                             styles.flex,
@@ -139,7 +138,7 @@ const InfoCenter = () => {
                                 <span className={ fmtClasses(styles.widthMax, styles.info, info.tSmall) }> This tutorial walks through the creation of a simple, but real, decentralized application. It assumes a basic familiarity with Reach, as though you've gone Rock, Paper, Scissors! tutorial, but does not dwell on intimate details of it. Similarly, it assumes that you have Reach installed and are comfortable using it.</span>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             </div>
         </div>

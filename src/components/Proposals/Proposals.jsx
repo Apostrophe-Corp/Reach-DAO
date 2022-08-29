@@ -5,6 +5,7 @@ import { useReach, fmtClasses } from "../../hooks";
 import styles from "../../styles/Shared.module.css";
 import Contribute from "./Contribute";
 import proposal from "../../styles/Proposals.module.css";
+import info from "../../styles/Info.module.css";
 
 const Proposals = () => {
     const { connectAndUpvote, connectAndDownvote, connectAndClaimRefund, proposals, setViews, standardUnit } = useReach();
@@ -193,6 +194,17 @@ const Proposals = () => {
             styles.directionY,
             styles.gap15,
         ) }>
+            <h1 className={ fmtClasses(info.devsText, styles.widthMax, styles.tCenter) }>Proposals</h1>
+            <div className={ fmtClasses(styles.widthMax) }>
+                <p className={ fmtClasses(
+                    styles.widthMax,
+                    styles.tCenter,
+                ) }>
+                    Transform your ideas into products. Create a proposal, let your peers contribute and vote on it and if it passes it becomes a bounty.
+                    <br />
+                    Be it a full scale project, a part of one or a tutorial, tap into our pull of blockchain enthusiasts to build them with you.
+                </p>
+            </div>
             {
                 proposals.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5)).map((el, i) => <Proposal el={ el } key={ i } />)
             }
