@@ -57,6 +57,7 @@ button {
   position: sticky;
   top: 0;
   right: 0;
+  z-index: 10000;
   /* border-bottom: 2px solid var(--reachWhite); */
 }
 
@@ -127,4 +128,14 @@ button {
   color: #000;
   bottom: 0;
   right: 0;
+}
+
+@media screen and (max-width: 992px) {
+}
+
+@media screen and (max-width: 600px) {
+  .header {
+    justify-content: center !important;
+    align-items: center !important;
+  }
 }
