@@ -153,3 +153,11 @@
     transform: scale(1, 1);
   }
 }
+
+.prizing {
+  display: inline-block;
+}
+
+.prize {
+  color: var(--themeText);
+}
