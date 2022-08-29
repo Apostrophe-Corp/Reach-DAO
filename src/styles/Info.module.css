@@ -4,6 +4,7 @@
 
 .parts {
   width: max(48%, 300px);
+  padding-bottom: 20px;
 }
 
 .list {
@@ -83,3 +84,58 @@
   overflow: auto;
   padding: 10px;
 }
+
+.socialLinks {
+  width: calc((100% / 4) - 5px);
+  height: 100px;
+  color: var(--themeText);
+}
+
+.icon {
+  flex: 1;
+  width: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.youtube {
+  background-image: url(./../../public/images/youtube.png) !important;
+}
+
+.twitter {
+  background-image: url(./../../public/images/twitterR.png) !important;
+}
+
+.linkedIn {
+  background-image: url(./../../public/images/linkedIn.png) !important;
+}
+
+.discord {
+  background-image: url(./../../public/images/discordl.png) !important;
+}
+
+.reachDiv {
+  height: 150px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-image: url(./../../public/images/reach.jpg) !important;
+}
+
+@media screen and (max-width: 992px) {
+}
+
+@media screen and (max-width: 600px) {
+  .parts {
+    width: 100% !important;
+  }
+
+  .socialLinks {
+    width: calc((100% / 2) - 5px);
+  }
+}
+
+/* Have access to all information about the Reach Platform from the Official website */
+
+/* Stay connected with the Reach Platform and its growing number of active developers on the following social media platforms */
