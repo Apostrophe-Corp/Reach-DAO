@@ -7,7 +7,7 @@ const Bounties = () => {
     const { deploy, setTokenSupply, defaultTokenSupply } = useReach();
     return (
         <div className={ fmtClasses(styles.container, styles.itemsCenter) }>
-            <h1 className={ fmtClasses(info.devsText, styles.widthMax, styles.tCenter) }>Proposals</h1>
+            <h1 className={ fmtClasses(info.devsText, styles.widthMax, styles.tCenter) }>Bounties</h1>
             <div className={ fmtClasses(styles.widthMax) }>
                 <p className={ fmtClasses(
                     styles.widthMax,
