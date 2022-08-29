@@ -5,7 +5,7 @@ import info from "../../styles/Info.module.css";
 import proposal from "../../styles/Proposals.module.css";
 
 const Bounties = () => {
-    const {bounties, standardUnit } = useReach();
+    const { bounties, standardUnit } = useReach();
     const [page, setPage] = useState(1);
     const [pageNumbers, setPageNumbers] = useState([]);
 
@@ -65,7 +65,7 @@ const Bounties = () => {
                             ) }> <strong>Owner:</strong> { el.owner }</span>
                             <a className={ fmtClasses(
                                 proposal.readMe,
-                            ) } href={ el.link } target="_blank" rel="noreferrer">View Proposal Details</a>
+                            ) } href={ el.link } target="_blank" rel="noreferrer">View Bounty Details</a>
                         </div>
                     </li>
                 </ul>
@@ -91,9 +91,9 @@ const Bounties = () => {
                             styles.actionButton,
                         ) }
                         onClick={ () => {
-                            alert('Thanks for showing your interest in this quest. Stick around a while and our Guild would be fully operational. Until then get your weapons, armor and party members ready!!');
+                            alert('Thanks for showing your interest in this quest. Stick around a while and our Guild would be fully operational. Until then, get your weapons, armor and, party members ready!!!');
                         } }
-                    >Accept this Quest</button>
+                    >Accept the Quest</button>
                 </div>
             </div>
         );
@@ -118,8 +118,10 @@ const Bounties = () => {
             { bounties.length > 0 &&
                 <h3 className={ fmtClasses(styles.widthMax, styles.tCenter, info.suhHeaders) }>Bounties</h3> }
             <br />
-            {
-                bounties.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5)).map((el, i) => <Bounty el={ el } key={ i } />)
+            <br />
+            <br />
+            { bounties.length > 0 &&
+                bounties.filter(el => el?.id > ((page - 1) * 5) && el?.id <= ((page) * 5)).map((el, i) => <Bounty el={ el } key={ i } />)
             }
             <br />
             <div className={ fmtClasses(

@@ -225,7 +225,7 @@ const Proposals = () => {
             { proposals.length > 0 &&
                 <h3 className={ fmtClasses(styles.widthMax, styles.tCenter, info.suhHeaders) }>Active Proposals</h3> }
             <br />
-            {
+            { proposals.length > 0 &&
                 proposals.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5)).map((el, i) => <Proposal el={ el } key={ i } />)
             }
             <br />
