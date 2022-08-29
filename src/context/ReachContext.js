@@ -103,7 +103,7 @@ const ReachContextProvider = ({ children }) => {
             setContract({ ctcInfoStr });
             ctc.events.create.monitor(createProposal);
             ctc.events.that.monitor(acknowledge);
-            setViews({ view: "Proposals", wrapper: "ProposalWrapper" });
+            setViews({ view: "InfoCenter", wrapper: "InfoWrapper" });
         } catch (error) {
             console.log({ error });
         }
@@ -259,7 +259,6 @@ const ReachContextProvider = ({ children }) => {
                 setProposals(proposals => ([...remainingProposals]));
                 break;
             default:
-                alert('Unhandled error..');
                 break;
         }
     };
@@ -277,7 +276,6 @@ const ReachContextProvider = ({ children }) => {
                 await contractInstance.apis.Voters.projectDown(parseInt(what[1]));
                 break;
             default:
-                alert('Unhandled error..');
                 break;
         }
     };
