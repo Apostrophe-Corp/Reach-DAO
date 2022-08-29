@@ -4,7 +4,7 @@ import {
     ALGO_WalletConnect as WalletConnect
 } from "@reach-sh/stdlib";
 import { Helmet } from "react-helmet";
-import * as backend from "../build/index.main.mjs";
+import * as backend from "../../build/index.main.mjs";
 import { fmtClasses } from "../hooks/fmtClasses";
 import styles from "../styles/MainWrapper.module.css";
 import styled from "../styles/SubWrapper.module.css";
