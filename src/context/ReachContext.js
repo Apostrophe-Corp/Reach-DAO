@@ -103,7 +103,7 @@ const ReachContextProvider = ({ children }) => {
             setContract({ ctcInfoStr });
             ctc.events.create.monitor(createProposal);
             ctc.events.that.monitor(acknowledge);
-            setViews({ view: "Proposals", wrapper: "ProposalWrapper" });
+            setViews({ view: "InfoCenter", wrapper: "InfoWrapper" });
         } catch (error) {
             console.log({ error });
         }
