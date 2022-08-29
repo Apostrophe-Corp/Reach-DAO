@@ -205,9 +205,7 @@ const Proposals = () => {
                     Be it a full scale project, a part of one or a tutorial, tap into our pull of blockchain enthusiasts to build them with you.
                 </p>
             </div>
-            {
-                proposals.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5)).map((el, i) => <Proposal el={ el } key={ i } />)
-            }
+            <h3 className={ fmtClasses(styles.widthMax, styles.tCenter, info.suhHeaders) }>What's your idea?</h3>
             <div className={ fmtClasses(
                 styles.flat,
                 styles.flex,
@@ -221,6 +219,16 @@ const Proposals = () => {
                     styles.dInlineBlock,
                 ) }>Make Proposal</button>
             </div>
+            <br />
+            <br />
+            <br />
+            { proposals.length > 0 &&
+                <h3 className={ fmtClasses(styles.widthMax, styles.tCenter, info.suhHeaders) }>Active Proposals</h3> }
+            <br />
+            { proposals.length > 0 &&
+                proposals.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5)).map((el, i) => <Proposal el={ el } key={ i } />)
+            }
+            <br />
             <div className={ fmtClasses(
                 styles.flat,
                 styles.flex,
@@ -231,7 +239,11 @@ const Proposals = () => {
                 {
                     pageNumbers.map((el, i) => <PageNumbers key={ i } index={ i + 1 } />)
                 }
-            </div> </div>
+            </div>
+            <br />
+            <br />
+            <br />
+        </div>
     );
 };
 

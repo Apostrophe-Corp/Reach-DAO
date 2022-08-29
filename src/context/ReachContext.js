@@ -8,6 +8,7 @@ import * as backend from "../../build/index.main.mjs";
 import { fmtClasses } from "../hooks/fmtClasses";
 import styles from "../styles/MainWrapper.module.css";
 import styled from "../styles/SubWrapper.module.css";
+import style from "../styles/Shared.module.css";
 
 const reach = loadStdlib(process.env);
 
@@ -41,25 +42,7 @@ const ReachContextProvider = ({ children }) => {
     const [contractInstance, setContractInstance] = useState(null);
     const [deadline, setDeadline] = useState(defaultDeadline);
     const [proposals, setProposals] = useState([]);
-
-    /**
-     * Sorts an array of objects by a property present one level deep, in any object in the array. If successful, returns the sorted array of objects, else the original array is returned.
-     * @param {Array<Object>} arrayOfObjects The array of objects to be sorted
-     * @param {String} property The name of the property to be sorted by.
-     * @returns {Array<Object>} A sorted array of objects, if sorting was successful, otherwise returns the original array.
-     */
-    const sortArrayOfObjects = (arrayOfObjects, property) => {
-        if (!arrayOfObjects) return arrayOfObjects;
-        if (!Array.isArray(arrayOfObjects)) return arrayOfObjects;
-        if (arrayOfObjects.length <= 1) return arrayOfObjects;
-        let isInt = false;
-        return arrayOfObjects.map((el, index) => {
-            isInt = !isNaN(el?.[property]);
-            return !isInt ?
-                `${el?.[property]?.[0]?.toUpperCase()?.concat(el?.[property]?.slice(1))}^-.-^${index}` :
-                `${el?.[property]}^-.-^${index}`;
-        })?.sort(isInt ? (a, b) => Number(a?.split('^-.-^')?.[0]) - Number(b?.split('^-.-^')?.[0]) : undefined)?.map(el => arrayOfObjects[el?.split('^-.-^')?.[1]]);
-    };
+    const [bounties, setBounties] = useState([]);
 
     /**
      * It should return the bare string value without null characters
@@ -243,6 +226,15 @@ const ReachContextProvider = ({ children }) => {
                         return el;
                     });
                     setProposals(proposals => ([...pProposals]));
+                    const timer = setTimeout(() => {
+                        const remainingProposals = proposals.filter(el => Number(el.id) !== Number(parseInt(what[1])));
+                        setProposals(proposals => ([...remainingProposals]));
+                        clearTimeout(timer);
+                    }, 30000);
+                    const cBounties = bounties;
+                    const nBounty = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
+                    cBounties.push(nBounty);
+                    setBounties(bounties => ([...cBounties]));
                 } else {
                     const fProposals = proposals.map(el => {
                         if (Number(el.id) === Number(parseInt(what[1]))) {
@@ -325,7 +317,6 @@ const ReachContextProvider = ({ children }) => {
         // Misc
         contract,
         deadline,
-        sortArrayOfObjects,
 
         // Accounts
         user,
@@ -357,6 +348,10 @@ const ReachContextProvider = ({ children }) => {
         // Proposals
         proposals,
         setProposals,
+
+        // Bouties
+        bounties,
+        setBounties,
     };
 
     return (
@@ -384,10 +379,25 @@ const ReachContextProvider = ({ children }) => {
                 ) } >
                     <div className={ fmtClasses(styled.welcomeInner) } >
                         <h1 className={ fmtClasses(styled.welcomeText) } >{ views.view === 'InfoCenter' ? `Welcome!` : views.view === 'Proposals' ? `Get the Chance` : views.view === 'Bounties' ? `Lets Hack` : '' }</h1>
-                        <h2 className={ fmtClasses(styled.subWelcomeText) } >{ views.view === 'InfoCenter' ? `To the new Hub.` : views.view === 'Proposals' ? `To make your dreams come true!` : views.view === 'Bounties' ? `And claim the bounty...` : '' }</h2>
+                        <h2 className={ fmtClasses(styled.subWelcomeText) } >{ views.view === 'InfoCenter' ? `To the new Hub.` : views.view === 'Proposals' ? `To bring your ideas to life!` : views.view === 'Bounties' ? `And claim the bounty...` : '' }</h2>
                     </div>
                 </div> }
             <div className={ fmtClasses(styles.childrenContainer) } id="root">{ children }</div>
+            <div className={ fmtClasses(
+                style.widthMax,
+                style.flex,
+                style.itemsCenter,
+                style.tCenter,
+                styles.footer,
+            ) }>
+                <span className={ fmtClasses(
+                    style.widthMax,
+                    style.dInlineBlock,
+                    style.tCenter,
+                ) }>
+                    &copy; Team 18, 2022.
+                </span>
+            </div>
         </ReachContext.Provider>
     );
 };
