@@ -229,9 +229,9 @@ const ReachContextProvider = ({ children }) => {
                         const remainingProposals = proposals.filter(el => Number(el.id) !== Number(parseInt(what[1])));
                         setProposals(proposals => ([...remainingProposals]));
                         clearTimeout(timer);
-                    }, 60000);
+                    }, 30000);
                     const cBounties = bounties;
-                    const nBounty = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])));
+                    const nBounty = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
                     cBounties.push(nBounty);
                     setBounties(bounties => ([...cBounties]));
                 } else {

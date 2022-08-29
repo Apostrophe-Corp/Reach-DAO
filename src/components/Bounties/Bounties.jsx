@@ -5,7 +5,7 @@ import info from "../../styles/Info.module.css";
 import proposal from "../../styles/Proposals.module.css";
 
 const Bounties = () => {
-    const { connectAndUpvote, connectAndDownvote, connectAndClaimRefund, bounties, standardUnit } = useReach();
+    const {bounties, standardUnit } = useReach();
     const [page, setPage] = useState(1);
     const [pageNumbers, setPageNumbers] = useState([]);
 
@@ -32,8 +32,7 @@ const Bounties = () => {
         );
     };
 
-    const Proposal = ({ el }) => {
-        const [showContrib, setShowContrib] = useState(false);
+    const Bounty = ({ el }) => {
         return (
             <div className={ fmtClasses(
                 styles.flex,
@@ -120,7 +119,7 @@ const Bounties = () => {
                 <h3 className={ fmtClasses(styles.widthMax, styles.tCenter, info.suhHeaders) }>Bounties</h3> }
             <br />
             {
-                bounties.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5)).map((el, i) => <Proposal el={ el } key={ i } />)
+                bounties.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5)).map((el, i) => <Bounty el={ el } key={ i } />)
             }
             <br />
             <div className={ fmtClasses(
@@ -130,7 +129,6 @@ const Bounties = () => {
                 styles.itemsCenter,
                 styles.gap10,
             ) }>
-
                 {
                     pageNumbers.map((el, i) => <PageNumbers key={ i } index={ i + 1 } />)
                 }
