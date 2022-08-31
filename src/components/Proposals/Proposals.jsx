@@ -217,7 +217,7 @@ const Proposals = () => {
                     styles.width70,
                     styles.actionButton,
                     styles.dInlineBlock,
-                ) }>Make Proposal</button>
+                ) }>Make a Proposal</button>
             </div>
             <br />
             <br />
@@ -226,7 +226,7 @@ const Proposals = () => {
                 <h3 className={ fmtClasses(styles.widthMax, styles.tCenter, info.suhHeaders) }>Active Proposals</h3> }
             <br />
             { proposals.length > 0 &&
-                proposals.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5)).map((el, i) => <Proposal el={ el } key={ i } />)
+                proposals.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5)).map((el, i) => el.didPass ? <></> : <Proposal el={ el } key={ i } />)
             }
             <br />
             <div className={ fmtClasses(

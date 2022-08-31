@@ -4,7 +4,7 @@
 
 .parts {
   width: max(48%, 300px);
-  padding-bottom: 20px;
+  padding: 20px 0;
 }
 
 .list {
@@ -42,11 +42,12 @@
 }
 
 .call {
-  background-color: rgb(248, 69, 69);
+  background-color: rgb(253, 59, 59);
   padding: 10px;
-  color: var(--theme);
+  color: rgb(16, 231, 255);
   font-size: 16px;
   font-weight: bold;
+  border: 0;
   border-radius: 5px;
 }
 
@@ -88,6 +89,7 @@
 .socialLinks {
   width: calc((100% / 4) - 5px);
   height: 100px;
+  padding: 10px 0;
   color: var(--themeText);
 }
 
@@ -120,7 +122,7 @@
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
-  background-image: url(./../../public/images/reach.jpg) !important;
+  background-image: url(./../../public/images/logo.svg) !important;
 }
 
 @media screen and (max-width: 992px) {

@@ -123,6 +123,7 @@ export const main = Reach.App(() => {
         if (checkStatus(upvote, downvote) == PASSED) {
             Proposals.log(state.pad('passed'), id);
             transfer(balance()).to(owner);
+            Proposals.log(state.pad('down'), id);
         } else {
             if (balance() > 0) {
                 Proposals.log(state.pad('failed'), id);
@@ -133,7 +134,7 @@ export const main = Reach.App(() => {
                 const currentBalance = parallelReduce(balance())
                     .invariant(balance() == currentBalance)
                     .while(currentBalance > 0)
-                    .api(Voters.claimRefund, (notify => {
+                    .api(Voters.claimRefund, (notify) => {
                         const amountTransferable = fromMapAmt(amtContributed[this]);
                         if (balance() >= amountTransferable && contributorsSet.member(this)) {
                             transfer(amountTransferable).to(
@@ -148,7 +149,7 @@ export const main = Reach.App(() => {
                             notify(false);
                             return currentBalance;
                         }
-                    }));
+                    });
             }
             Proposals.log(state.pad('down'), id);
         }
