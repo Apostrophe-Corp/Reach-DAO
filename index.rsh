@@ -117,41 +117,38 @@ export const main = Reach.App(() => {
             })
             .timeout(timeRemaining(), () => {
                 Deployer.publish();
-                return [upvote, downvote, amtTotal];
+                if (checkStatus(upvote, downvote) == PASSED) {
+                    Proposals.log(state.pad('passed'), id);
+                    transfer(balance()).to(owner);
+                } else {
+                    if (balance() > 0) {
+                        const fromMapAdd = (m) => fromMaybe(m, (() => Deployer), ((x) => x));
+                        const fromMapAmt = (m) => fromMaybe(m, (() => 0), ((x) => x));
+                        Proposals.log(state.pad('failed'), id);
+                        const currentBalance = parallelReduce(balance())
+                            .invariant(balance() == currentBalance)
+                            .while(currentBalance > 0)
+                            .api(Voters.claimRefund, (notify) => {
+                                const amountTransferable = fromMapAmt(amtContributed[this]);
+                                if (balance() >= amountTransferable && contributorsSet.member(this)) {
+                                    transfer(amountTransferable).to(
+                                        fromMapAdd(contributors[this])
+                                    );
+                                    contributorsSet.remove(this);
+                                    Proposals.log(state.pad('refundPassed'), id);
+                                    notify(true);
+                                    return currentBalance - amountTransferable;
+                                } else {
+                                    Proposals.log(state.pad('refundFailed'), id);
+                                    notify(false);
+                                    return currentBalance;
+                                }
+                            });
+                    }
+                    Proposals.log(state.pad('down'), id);
+                }
+                return [upvote, downvote, balance()];
             });
-
-        if (checkStatus(upvote, downvote) == PASSED) {
-            Proposals.log(state.pad('passed'), id);
-            transfer(balance()).to(owner);
-        } else {
-            if (balance() > 0) {
-                Proposals.log(state.pad('failed'), id);
-                const fromMapAdd = (m) => fromMaybe(m, (() => Deployer), ((x) => x));
-                const fromMapAmt = (m) => fromMaybe(m, (() => 0), ((x) => x));
-                commit();
-                Deployer.publish();
-                const currentBalance = parallelReduce(balance())
-                    .invariant(balance() == currentBalance)
-                    .while(currentBalance > 0)
-                    .api(Voters.claimRefund, (notify => {
-                        const amountTransferable = fromMapAmt(amtContributed[this]);
-                        if (balance() >= amountTransferable && contributorsSet.member(this)) {
-                            transfer(amountTransferable).to(
-                                fromMapAdd(contributors[this])
-                            );
-                            contributorsSet.remove(this);
-                            Proposals.log(state.pad('refundPassed'), id);
-                            notify(true);
-                            return currentBalance - amountTransferable;
-                        } else {
-                            Proposals.log(state.pad('refundFailed'), id);
-                            notify(false);
-                            return currentBalance;
-                        }
-                    }));
-            }
-            Proposals.log(state.pad('down'), id);
-        }
         transfer(balance()).to(Deployer);
     } else {
         const keepGoing = parallelReduce(true)
@@ -207,4 +204,5 @@ export const main = Reach.App(() => {
             });
     }
     commit();
+    exit();
 });

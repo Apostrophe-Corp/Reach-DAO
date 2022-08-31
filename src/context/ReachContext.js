@@ -43,6 +43,8 @@ const ReachContextProvider = ({ children }) => {
     const [deadline, setDeadline] = useState(defaultDeadline);
     const [proposals, setProposals] = useState([]);
     const [bounties, setBounties] = useState([]);
+    const [expired, setExpired] = useState([]);
+    const droppedIDs = [];
 
     /**
      * It should return the bare string value without null characters
@@ -58,6 +60,11 @@ const ReachContextProvider = ({ children }) => {
         }
         return string;
     };
+
+    const sleep = (secs, thenExec) => new Promise((resolve) => setTimeout(() => {
+        thenExec();
+        resolve();
+    }, (secs * 1000)));
 
     const connectAccount = async () => {
         const account = await reach.getDefaultAccount();
@@ -92,7 +99,6 @@ const ReachContextProvider = ({ children }) => {
         }
     };
 
-    // TODO implement the logic to send a contribution, positive or negative
     const connectAndUpvote = async (id, ctcInfoStr) => {
         try {
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
@@ -113,7 +119,6 @@ const ReachContextProvider = ({ children }) => {
         }
     };
 
-    // TODO figure out the use of this later
     const makeContribution = async (amount, id, ctcInfoStr) => {
         try {
             const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr));
@@ -138,10 +143,6 @@ const ReachContextProvider = ({ children }) => {
         }
     };
 
-    const confirmContribution = async () => {
-        setViews({ views: 'Confirmed', wrapper: 'ProposalWrapper' });
-    };
-
     const DeployerInteract = {
         getProposal: {
             id: 1,
@@ -154,7 +155,6 @@ const ReachContextProvider = ({ children }) => {
         },
     };
 
-    // TODO create a function to add to the Map of proposals stored in our contract;
     const updateProposals = async ({ when, what }) => {
         await contractInstance.apis.Voters.created({
             id: parseInt(what[0]),
@@ -181,12 +181,13 @@ const ReachContextProvider = ({ children }) => {
             contribs: 0,
             timedOut: false,
             didPass: false,
+            isDown: false,
         });
         setProposals(proposals => ([...currentProposals]));
         console.log(what[5]);
     };
 
-    const acknowledge = ({ when, what }) => {
+    const acknowledge = async ({ when, what }) => {
         const ifState = x => x.padEnd(20, '\u0000');
         switch (what[0]) {
             case ifState('upvoted'):
@@ -217,37 +218,43 @@ const ReachContextProvider = ({ children }) => {
                 setProposals(proposals => ([...conProposals]));
                 break;
             case ifState('timedOut'):
+                // Take it to the Bounties view, drop from the proposal view
                 if (parseInt(what[2])) {
-                    const pProposals = proposals.map(el => {
+                    const xXProposals = proposals.map(el => {
                         if (Number(el.id) === Number(parseInt(what[1]))) {
                             el['timedOut'] = true;
                             el['didPass'] = true;
                         }
                         return el;
                     });
-                    setProposals(proposals => ([...pProposals]));
-                    const timer = setTimeout(() => {
-                        const remainingProposals = proposals.filter(el => Number(el.id) !== Number(parseInt(what[1])));
-                        setProposals(proposals => ([...remainingProposals]));
-                        clearTimeout(timer);
-                    }, 30000);
+                    setProposals(proposals => ([...xXProposals]));
                     const cBounties = bounties;
                     const nBounty = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
                     cBounties.push(nBounty);
                     setBounties(bounties => ([...cBounties]));
+                    // Take it the list of timed out proposals and remove it from the main list of proposals
                 } else {
-                    const fProposals = proposals.map(el => {
+                    const nProposals = proposals;
+                    const fProposals = nProposals.map(el => {
                         if (Number(el.id) === Number(parseInt(what[1]))) {
                             el['timedOut'] = true;
                             el['didPass'] = false;
                         }
+                        setExpired(expired => ([...expired, el]));
                         return el;
                     });
                     setProposals(proposals => ([...fProposals]));
                 }
                 break;
             case ifState('projectDown'):
-                const remainingProposals = proposals.filter(el => Number(el.id) !== Number(parseInt(what[1])));
+                droppedIDs.push(Number(parseInt(what[1])));
+                const yProposals = proposals;
+                const remainingProposals = yProposals.filter(el => {
+                    if (Number(el.id) === Number(parseInt(what[1]))) {
+                        el['isDown'] = true;
+                    }
+                    return Number(el.id) !== Number(parseInt(what[1]));
+                });
                 setProposals(proposals => ([...remainingProposals]));
                 break;
             default:
@@ -291,8 +298,7 @@ const ReachContextProvider = ({ children }) => {
 
     const makeProposal = async (proposal) => {
         const proposalSetup = async () => {
-            // TODO implement the interact functionality
-            const deadline = { ETH: 10, ALGO: 100, CFX: 1000 }[reach.connector];
+            const deadline = { ETH: 5, ALGO: 50, CFX: 500 }[reach.connector];
             const ctc = user.account.contract(backend);
             ctc.p.Deployer({
                 getProposal: {
@@ -343,13 +349,12 @@ const ReachContextProvider = ({ children }) => {
         connectAndUpvote,
         connectAndDownvote,
         connectAndClaimRefund,
-        confirmContribution,
 
         // Proposals
         proposals,
         setProposals,
 
-        // Bouties
+        // Bounties
         bounties,
         setBounties,
     };
@@ -358,6 +363,7 @@ const ReachContextProvider = ({ children }) => {
         <ReachContext.Provider value={ ReachContextValues }>
             <Helmet>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title>Reach DAO | The new Hub</title>
             </Helmet>
             <div className={ fmtClasses(styles.header, !contract?.ctcInfoStr ? styles.itemsCenter : '') }>
                 <div className={ fmtClasses(styles.brandContainer) }>
@@ -366,9 +372,30 @@ const ReachContextProvider = ({ children }) => {
                 <div className={ fmtClasses(styles.navContainer) }>
                     { contract?.ctcInfoStr &&
                         <ul className={ fmtClasses(styles.navList, styles.flat) }>
-                            <li className={ fmtClasses(views.view === 'InfoCenter' ? styles.navItemActive : styles.navItem) } onClick={ () => setViews({ view: 'InfoCenter', wrapper: 'InfoWrapper' }) }>Info Center</li>
-                            <li className={ fmtClasses(views.view === 'Proposals' ? styles.navItemActive : styles.navItem) } onClick={ () => setViews({ view: 'Proposals', wrapper: 'ProposalWrapper' }) }>Proposals</li>
-                            <li className={ fmtClasses(views.view === 'Bounties' ? styles.navItemActive : styles.navItem) } onClick={ () => setViews({ view: 'Bounties', wrapper: 'BountyWrapper' }) }>Bounties</li>
+                            <li className={ fmtClasses(views.view === 'InfoCenter' ? styles.navItemActive : styles.navItem) } onClick={ () => {
+                                setViews({ view: 'InfoCenter', wrapper: 'InfoWrapper' });
+                                window.scrollTo({
+                                    top: 0,
+                                    left: 0,
+                                    behavior: "smooth"
+                                });
+                            } }>Info Center</li>
+                            <li className={ fmtClasses(views.view === 'Proposals' ? styles.navItemActive : styles.navItem) } onClick={ () => {
+                                setViews({ view: 'Proposals', wrapper: 'ProposalWrapper' });
+                                window.scrollTo({
+                                    top: 0,
+                                    left: 0,
+                                    behavior: "smooth"
+                                });
+                            } }>Proposals</li>
+                            <li className={ fmtClasses(views.view === 'Bounties' ? styles.navItemActive : styles.navItem) } onClick={ () => {
+                                setViews({ view: 'Bounties', wrapper: 'BountyWrapper' });
+                                window.scrollTo({
+                                    top: 0,
+                                    left: 0,
+                                    behavior: "smooth"
+                                });
+                            } }>Bounties</li>
                         </ul> }
                 </div>
             </div>
@@ -403,5 +430,3 @@ const ReachContextProvider = ({ children }) => {
 };
 
 export default ReachContextProvider;
-
-// Still in progress....
