@@ -43,7 +43,7 @@ const ReachContextProvider = ({ children }) => {
     const [deadline, setDeadline] = useState(defaultDeadline);
     const [proposals, setProposals] = useState([]);
     const [bounties, setBounties] = useState([]);
-    const [timedOuts, setTimedOuts] = useState([]);
+    const [expired, setExpired] = useState([]);
     const droppedIDs = [];
 
     /**
@@ -59,7 +59,7 @@ const ReachContextProvider = ({ children }) => {
             }
         }
         return string;
-    }; 
+    };
 
     const sleep = (secs, thenExec) => new Promise((resolve) => setTimeout(() => {
         thenExec();
@@ -181,6 +181,7 @@ const ReachContextProvider = ({ children }) => {
             contribs: 0,
             timedOut: false,
             didPass: false,
+            isDown: false,
         });
         setProposals(proposals => ([...currentProposals]));
         console.log(what[5]);
@@ -219,28 +220,27 @@ const ReachContextProvider = ({ children }) => {
             case ifState('timedOut'):
                 // Take it to the Bounties view, drop from the proposal view
                 if (parseInt(what[2])) {
-                    const cBounties = bounties;
-                    const nBounty = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
-                    cBounties.push(nBounty);
-                    setBounties(bounties => ([...cBounties]));
-                    droppedIDs.push(Number(parseInt(what[1])));
-                    const xXProposals = proposals;
-                    const remainingProposals = xXProposals.filter(el => {
+                    const xXProposals = proposals.map(el => {
                         if (Number(el.id) === Number(parseInt(what[1]))) {
                             el['timedOut'] = true;
                             el['didPass'] = true;
                         }
-                        return Number(el.id) !== Number(parseInt(what[1]));
+                        return el;
                     });
-                    setTimedOuts(proposals => ([...remainingProposals]));
-                // Take it the list of timed out proposals and remove it from the main list of proposals
+                    setProposals(proposals => ([...xXProposals]));
+                    const cBounties = bounties;
+                    const nBounty = proposals.filter(el => Number(el.id) === Number(parseInt(what[1])))[0];
+                    cBounties.push(nBounty);
+                    setBounties(bounties => ([...cBounties]));
+                    // Take it the list of timed out proposals and remove it from the main list of proposals
                 } else {
                     const nProposals = proposals;
                     const fProposals = nProposals.map(el => {
                         if (Number(el.id) === Number(parseInt(what[1]))) {
                             el['timedOut'] = true;
                             el['didPass'] = false;
-                        }                                             
+                        }
+                        setExpired(expired => ([...expired, el]));
                         return el;
                     });
                     setProposals(proposals => ([...fProposals]));
@@ -249,7 +249,12 @@ const ReachContextProvider = ({ children }) => {
             case ifState('projectDown'):
                 droppedIDs.push(Number(parseInt(what[1])));
                 const yProposals = proposals;
-                const remainingProposals = yProposals.filter(el => Number(el.id) !== Number(parseInt(what[1])));
+                const remainingProposals = yProposals.filter(el => {
+                    if (Number(el.id) === Number(parseInt(what[1]))) {
+                        el['isDown'] = true;
+                    }
+                    return Number(el.id) !== Number(parseInt(what[1]));
+                });
                 setProposals(proposals => ([...remainingProposals]));
                 break;
             default:
@@ -293,7 +298,7 @@ const ReachContextProvider = ({ children }) => {
 
     const makeProposal = async (proposal) => {
         const proposalSetup = async () => {
-            const deadline = { ETH: 10, ALGO: 100, CFX: 1000 }[reach.connector];
+            const deadline = { ETH: 5, ALGO: 50, CFX: 500 }[reach.connector];
             const ctc = user.account.contract(backend);
             ctc.p.Deployer({
                 getProposal: {
@@ -358,6 +363,7 @@ const ReachContextProvider = ({ children }) => {
         <ReachContext.Provider value={ ReachContextValues }>
             <Helmet>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <title>Reach DAO | The new Hub</title>
             </Helmet>
             <div className={ fmtClasses(styles.header, !contract?.ctcInfoStr ? styles.itemsCenter : '') }>
                 <div className={ fmtClasses(styles.brandContainer) }>
