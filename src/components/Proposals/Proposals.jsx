@@ -217,16 +217,16 @@ const Proposals = () => {
                     styles.width70,
                     styles.actionButton,
                     styles.dInlineBlock,
-                ) }>Make Proposal</button>
+                ) }>Make a Proposal</button>
             </div>
             <br />
             <br />
             <br />
-            { proposals.length > 0 &&
+            { proposals.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5) && !el.timedOut).length > 0 &&
                 <h3 className={ fmtClasses(styles.widthMax, styles.tCenter, info.suhHeaders) }>Active Proposals</h3> }
             <br />
-            { proposals.length > 0 &&
-                proposals.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5)).map((el, i) => <Proposal el={ el } key={ i } />)
+            { proposals.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5) && !el.timedOut).length > 0 &&
+                proposals.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5) && !el.timedOut).map((el, i) => <Proposal el={ el } key={ i } />)
             }
             <br />
             <div className={ fmtClasses(
@@ -236,10 +236,17 @@ const Proposals = () => {
                 styles.itemsCenter,
                 styles.gap10,
             ) }>
-                {
+                { proposals.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5) && !el.timedOut).length > 0 &&
                     pageNumbers.map((el, i) => <PageNumbers key={ i } index={ i + 1 } />)
                 }
             </div>
+            <br />
+            { proposals.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5) && el.timedOut && !el.didPass && !el.isDown).length > 0 &&
+                <h3 className={ fmtClasses(styles.widthMax, styles.tCenter, info.suhHeaders) }>Timed out Proposals</h3> }
+            <br />
+            { proposals.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5) && el.timedOut && !el.didPass && !el.isDown).length > 0 &&
+                proposals.filter(el => el.id > ((page - 1) * 5) && el.id <= ((page) * 5) && el.timedOut && !el.didPass && !el.isDown).map((el, i) => <Proposal el={ el } key={ i } />)
+            }
             <br />
             <br />
             <br />

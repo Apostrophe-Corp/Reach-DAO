@@ -161,3 +161,9 @@
 .prize {
   color: var(--themeText);
 }
+
+@media screen and (max-width: 600px) {
+  .interact {
+    opacity: 1 !important;
+  }
+}
