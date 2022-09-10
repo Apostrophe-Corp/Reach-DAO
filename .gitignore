@@ -11,6 +11,9 @@
 # testing
 /coverage
 
+ref.js
+test.js
+
 # production
 */build
 build
