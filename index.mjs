@@ -294,6 +294,9 @@ const deploy = async () => {
   ctc.events.that.monitor(acknowledge)
   contract = {ctcInfoStr}
   console.clear()
+  
+  console.log(`Reach DAO by Team 18`)
+  console.log(`${contract.ctcInfoStr ?? ""}`)
   console.log(`[+] Deployed`)
   console.group(`Here is the contract information`)
   console.log(`${contract.ctcInfoStr}`)
