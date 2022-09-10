@@ -75,8 +75,7 @@ const attach = async ctcInfoStr => {
     contract = {ctcInfoStr}
     ctc.events.create.monitor(createProposal)
     ctc.events.that.monitor(acknowledge)
-    // TODO show the General CV
-    // setViews({ view: "InfoCenter", wrapper: "InfoWrapper" });
+    showInfoCenter()
   } catch (error) {
     console.log({error})
   }
@@ -119,7 +118,7 @@ const connectAndClaimRefund = async ctcInfoStr => {
     const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr))
     const didRefund = await ctc.apis.Voters.claimRefund()
     if (didRefund) {
-      console.log("[✔] Refund Success")
+      console.log("[+] Refund Success")
     } else {
       console.log(
         "[‼] It seems you don't have funds to claim, did you contribute to this proposal?",
@@ -151,7 +150,6 @@ const updateProposals = async ({when, what}) => {
     owner: noneNull(what[4]),
     contractInfo: what[5],
   })
-  console.log(what[5])
 }
 
 const createProposal = ({when, what}) => {
@@ -169,7 +167,7 @@ const createProposal = ({when, what}) => {
     didPass: false,
     isDown: false,
   })
-  // console.log(what[5]);
+  showProposals()
 }
 
 const acknowledge = async ({when, what}) => {
@@ -183,6 +181,7 @@ const acknowledge = async ({when, what}) => {
         return el
       })
       proposals = upProposals
+      showProposals()
       break
     case ifState("downvoted"):
       const downProposals = proposals.map(el => {
@@ -192,6 +191,7 @@ const acknowledge = async ({when, what}) => {
         return el
       })
       proposals = downProposals
+      showProposals()
       break
     case ifState("contributed"):
       const conProposals = proposals.map(el => {
@@ -201,9 +201,9 @@ const acknowledge = async ({when, what}) => {
         return el
       })
       proposals = conProposals
+      showProposals()
       break
     case ifState("timedOut"):
-      // Take it to the Bounties view, drop from the proposal view
       if (parseInt(what[2])) {
         const nBounty = proposals.filter(
           el => Number(el.id) === Number(parseInt(what[1])),
@@ -214,7 +214,6 @@ const acknowledge = async ({when, what}) => {
           el => Number(el.id) !== Number(parseInt(what[1])),
         )
         proposals = xXProposals
-        // Take it the list of timed out proposals and remove it from the main list of proposals
       } else {
         const fProposals = proposals.map(el => {
           if (Number(el.id) === Number(parseInt(what[1]))) {
@@ -262,7 +261,6 @@ const deploy = async () => {
   console.log("[..] Deploying")
   const ctc = user.account.contract(backend)
   contractInstance = ctc
-  console.log("Got here")
   const interact = {
     ...DeployerInteract,
   }
@@ -276,6 +274,8 @@ const deploy = async () => {
   console.group(`Here is the contract information`)
   console.log(`${contract.ctcInfoStr}`)
   console.groupEnd(`Here is the contract information`)
+  await sleep(3000)
+  showInfoCenter()
 }
 
 const makeProposal = async proposal => {
@@ -292,17 +292,23 @@ const makeProposal = async proposal => {
     ctc.events.log.monitor(timeoutProposal)
     ctc.events.created.monitor(updateProposals)
   }
+  console.log(`[..] Creating Proposal`)
   await proposalSetup()
 }
 
 /**
- * End of declarations
+ * End of declarations and definitions
+ */
+
+/**
+ * The build for interactivity
  */
 
 const showInfoCenter = async () => {
   console.clear()
 
   console.log(`Reach DAO by Team 18`)
+  console.log(`${contract.ctcInfoStr ?? ""}`)
   console.group(`Info Center`)
   console.log(`Welcome! To the new Hub!`)
   console.groupEnd(`Info Center`)
@@ -347,7 +353,9 @@ const showInfoCenter = async () => {
 
 const showProposals = async () => {
   console.clear()
+
   console.log(`Reach DAO by Team 18`)
+  console.log(`${contract.ctcInfoStr ?? ""}`)
   console.group(`Proposals`)
   console.log(`Get the chance to bring your ideas to life!`)
   console.groupEnd(`Proposals`)
@@ -622,7 +630,9 @@ const showProposals = async () => {
 
 const showBounties = async () => {
   console.clear()
+
   console.log(`Reach DAO by Team 18`)
+  console.log(`${contract.ctcInfoStr ?? ""}`)
   console.group(`Bounties`)
   console.log(`Lets Hack and claim the Bounty...`)
   console.groupEnd(`Bounties`)
@@ -729,5 +739,9 @@ const showBounties = async () => {
 
   respondTo(userInput)
 }
+
+/**
+ * End of build
+ */
 
 process.exit(0)
