@@ -294,7 +294,7 @@ const deploy = async () => {
   ctc.events.that.monitor(acknowledge)
   contract = {ctcInfoStr}
   console.clear()
-  
+
   console.log(`Reach DAO by Team 18`)
   console.log(`${contract.ctcInfoStr ?? ""}`)
   console.log(`[+] Deployed`)
@@ -400,7 +400,7 @@ const showProposals = async () => {
     )
 
     description = await ask.ask(
-      `Enter a breif description of the Proposal (Max 180)`,
+      `Enter a brief description of the Proposal (Max 180)`,
       value => String(value).slice(0, 180),
     )
 
