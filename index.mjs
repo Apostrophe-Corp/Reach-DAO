@@ -18,6 +18,12 @@ let [user, contractInstance, contract, proposals, bounties, views] = [
 ]
 
 const connectAccount = async () => {
+  console.clear()
+
+  console.log(`Reach DAO by Team 18`)
+  console.log(`${contract.ctcInfoStr ?? ""}`)
+  console.log("Connect Account")
+
   const createAcc = await ask.ask(
     `Would you like to create an account? (Only available on DevNet)`,
     ask.yesno,
@@ -46,11 +52,19 @@ const connectAccount = async () => {
 
 const setRole = async () => {
   console.clear()
+
+  console.log(`Reach DAO by Team 18`)
+  console.log(`${contract.ctcInfoStr ?? ""}`)
+  console.log("Select Role")
+
   const isDeployer = await ask.ask("Are you the Admin? [y/n]", ask.yesno)
 
   if (isDeployer) {
     console.clear()
-    console.log("Welcome Admin")
+
+    console.log(`Reach DAO by Team 18`)
+    console.log(`${contract.ctcInfoStr ?? ""}`)
+    console.log("Welcome Admin!")
     const shouldDeploy = await ask.ask(
       `Enter 'y' to proceed with deployment, 'n' to abort`,
       ask.yesno,
@@ -61,15 +75,22 @@ const setRole = async () => {
       setRole()
     }
   } else {
-    console.log("Hello Attacher")
+    console.clear()
+
+    console.log(`Reach DAO by Team 18`)
+    console.log(`${contract.ctcInfoStr ?? ""}`)
+    console.log("Hello Attacher!")
     const info = await ask.ask("Please enter the contract information", attach)
   }
 }
 
 const attach = async ctcInfoStr => {
   console.clear()
+
+  console.log(`Reach DAO by Team 18`)
+  console.log(`${contract.ctcInfoStr ?? ""}`)
+  console.log("[..] Attaching")
   try {
-    console.log("[..] Attaching")
     const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr))
     contractInstance = ctc
     contract = {ctcInfoStr}
@@ -258,6 +279,9 @@ const timeoutProposal = async ({when, what}) => {
 
 const deploy = async () => {
   console.clear()
+
+  console.log(`Reach DAO by Team 18`)
+  console.log(`${contract.ctcInfoStr ?? ""}`)
   console.log("[..] Deploying")
   const ctc = user.account.contract(backend)
   contractInstance = ctc
@@ -270,7 +294,7 @@ const deploy = async () => {
   ctc.events.that.monitor(acknowledge)
   contract = {ctcInfoStr}
   console.clear()
-  console.log(`[✔] Deployed`)
+  console.log(`[+] Deployed`)
   console.group(`Here is the contract information`)
   console.log(`${contract.ctcInfoStr}`)
   console.groupEnd(`Here is the contract information`)
@@ -342,7 +366,7 @@ const showInfoCenter = async () => {
       try {
         input = Number(input)
       } catch (error) {
-        throw Error("Please enter a valid input")
+        throw Error("[‼] Please enter a valid input")
       }
       return input
     },
@@ -378,7 +402,7 @@ const showProposals = async () => {
     )
 
     const satisfied = await ask.ask(
-      `Are you satisfied with these details?\n
+      `Are you satisfied with these details? [y/n]\n
             Title: ${title}\n
             Link: ${link}\n
             Description: ${description}`,
@@ -466,7 +490,7 @@ const showProposals = async () => {
               try {
                 x = Number(x)
               } catch (error) {
-                throw Error("Please enter a valid input")
+                throw Error("[‼] Please enter a valid input")
               }
               return x
             },
@@ -480,7 +504,7 @@ const showProposals = async () => {
                   try {
                     x = Number(x)
                   } catch (error) {
-                    throw Error("Please enter a valid number")
+                    throw Error("[‼] Please enter a valid number")
                   }
                   return x
                 },
@@ -514,7 +538,7 @@ const showProposals = async () => {
         } else if (input === 99) {
           selectActiveProposal(section + 1)
         } else {
-          throw Error("Please enter a valid input")
+          throw Error("[‼] Please enter a valid input")
         }
       },
     )
@@ -572,7 +596,7 @@ const showProposals = async () => {
         } else if (input === 99) {
           selectActiveProposal(section + 1)
         } else {
-          throw Error("Please enter a valid input")
+          throw Error("[‼] Please enter a valid input")
         }
       },
     )
@@ -619,7 +643,7 @@ const showProposals = async () => {
       try {
         input = Number(input)
       } catch (error) {
-        throw Error("Please enter a valid input")
+        throw Error("[‼] Please enter a valid input")
       }
       return input
     },
@@ -683,7 +707,7 @@ const showBounties = async () => {
           Number(input) >= 1
         ) {
           console.log(
-            "Thanks for showing your interest in this quest. Stick around a while and our Guild would be fully operational. Until then, get your weapons, armor and, party members ready!!!",
+            "[+] Thanks for showing your interest in this quest. Stick around a while and our Guild would be fully operational. Until then, get your weapons, armor and, party members ready!!!",
           )
           await sleep(4000)
           showBounties()
@@ -692,7 +716,7 @@ const showBounties = async () => {
         } else if (input === 99) {
           selectActiveBounty(section + 1)
         } else {
-          throw Error("Please enter a valid input")
+          throw Error("[‼] Please enter a valid input")
         }
       },
     )
@@ -731,7 +755,7 @@ const showBounties = async () => {
       try {
         input = Number(input)
       } catch (error) {
-        throw Error("Please enter a valid input")
+        throw Error("[‼] Please enter a valid input")
       }
       return input
     },
