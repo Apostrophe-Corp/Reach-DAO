@@ -467,7 +467,7 @@ Owner: ${p.owner ?? user.account.networkAccount.addr}
 Link: ${p.link ?? "Link"}
 Contributions: ${p.contribs ?? 0} ${reach.standardUnit}
 Up_Votes: ${p.upvotes}
-Down_Votes: ${p.downvotes}
+Down_Votes: ${p.downvotes}\n
 `);
       });
     } else {
