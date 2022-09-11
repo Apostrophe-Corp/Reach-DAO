@@ -170,7 +170,7 @@ const updateProposals = async ({ when, what }) => {
   });
 };
 
-const createProposal = async ({ when, what }) => {
+const createProposal = ({ when, what }) => {
   proposals.push({
     id: parseInt(what[0]),
     title: noneNull(what[1]),
@@ -187,7 +187,7 @@ const createProposal = async ({ when, what }) => {
   });
 };
 
-const acknowledge = async ({ when, what }) => {
+const acknowledge = ({ when, what }) => {
   const ifState = x => x.padEnd(20, "\u0000");
   switch (what[0]) {
     case ifState("upvoted"):
