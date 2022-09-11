@@ -260,21 +260,21 @@ const timeoutProposal = async ({ when, what }) => {
       try {
         await contractInstance.apis.Voters.timedOut(parseInt(what[1]), 1);
       } catch (error) {
-        console.log('[‼] Error processing a timeout');
+        console.log('[‼] A transaction clashed with a timeout');
       }
       break;
     case ifState("failed"):
       try {
         await contractInstance.apis.Voters.timedOut(parseInt(what[1]), 0);
       } catch (error) {
-        console.log('[‼] Error processing a timeout');
+        console.log('[‼] A transaction clashed with a timeout');
       }
       break;
     case ifState("down"):
       try {
         await contractInstance.apis.Voters.projectDown(parseInt(what[1]));
       } catch (error) {
-        console.log('[‼] Error processing a teardown');
+        console.log('[‼] A transaction clashed with a teardown');
       }
       break;
     default:
