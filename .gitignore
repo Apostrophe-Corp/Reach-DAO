@@ -13,7 +13,7 @@
 
 # production
 */build
-build
+build/
 build/*
 index1.rsh
 index2.rsh
