@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-*.reach/
-*.vscode/ 
+.reach/
+.vscode/ 
 
 # dependencies
 */node_modules
@@ -13,7 +13,7 @@
 
 # production
 */build
-build
+build/
 build/*
 index1.rsh
 index2.rsh
