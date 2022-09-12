@@ -17,6 +17,8 @@ build
 build/*
 index1.rsh
 index2.rsh
+ref.js
+test.js
 
 # misc
 .DS_Store
