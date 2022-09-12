@@ -1,6 +1,6 @@
 # Reach DAO
 
-This project was created for the decentralized Umoja3 Bounty hack, organized by [Reach](bit.ly/3GJm5ep), the African Blockchain Alliance and Algorand.
+This project was created for the decentralized Umoja3 Bounty hack, organized by [Reach](https://bit.ly/3GJm5ep), the African Blockchain Alliance and Algorand.
 
 The DApp allows any user to create a proposal for other users to contribute to and vote on. If the proposal passes, it becomes a bounty funded by the contributions as well as funds raised from sponsors. If the proposal does not pass, all users who contributed can claim a refund on the amounts that each of them contributed.  
 
@@ -53,7 +53,7 @@ Please be aware that you would have to sign multiple transactions on your mobile
 
 1. Open a few tabs in your favourite browser (we recommend at least 3 tabs).
 
-2. Navigate to the app at the URL <http://localhost:3000>.  
+2. Navigate to the app at the URL `http://localhost:3000`.  
 
 3. Click on the Connect Wallet button to activate wallet connect and scan the QR code.  
 
@@ -111,7 +111,7 @@ sudo service docker start
 ./reach react
 ```
 
-Should you encounter any other errors, please tag either `goonerlabs#1008` 0r `Emmanuel Agbavwe#2954` in the help channel of the [Reach Discord Server](bit.ly/3BnPyKd).  
+Should you encounter any other errors, please tag either `goonerlabs#1008` 0r `Emmanuel Agbavwe#2954` in the help channel of the [Reach Discord Server](https://bit.ly/3BnPyKd).  
 
 And the rest of the awesome team at Reach, The African Blockchain Alliance and The Algorand Foundation.
 
@@ -146,7 +146,7 @@ This project is open to contributions from great minded developers who share our
 
 To contribute, simply:
 
-- Fork this repo, make your updates and additions
+- Fork this repo, make your updates and additions.
 - Create a GitHub discussion and bring your new ideas to our notice.
 - Once approved, set up a pull request.
 - After revision, your name will forever be among the wonderful develpers who contributed to building Reach DAO.  
