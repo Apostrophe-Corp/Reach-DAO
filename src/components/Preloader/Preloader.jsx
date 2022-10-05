@@ -8,6 +8,10 @@ const Preloader = () => {
 		fmtClasses(styles.container)
 	)
 
+	useEffect(() => {
+		setPreloaderClass(styles.container)
+	}, [])
+
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	useEffect(() => {
 		const fadeOff = () => {
@@ -20,12 +24,11 @@ const Preloader = () => {
 				})
 			})
 		}
-		if (!showPreloader) {
-			alert('Fading out')
+		if (showPreloader === false) {
+			console.log('Fading out')
 			fadeOff()
 			setProcessing(false)
-			setPreloaderClass(styles.container)
-			alert('Fading should be completed now')
+			console.log('Fading should be completed now')
 		}
 	}, [showPreloader])
 

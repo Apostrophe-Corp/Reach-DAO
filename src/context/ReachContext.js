@@ -19,7 +19,13 @@ reach.setWalletFallback(
 		WalletConnect,
 	})
 )
-
+let [
+	upVotePromise,
+	downVotePromise,
+	contribPromise,
+	claimPromise,
+	createPromise,
+] = [{}, {}, {}, {}, {}]
 const { standardUnit } = reach
 const deadline = { ETH: 5, ALGO: 50, CFX: 500 }[reach.connector]
 
@@ -43,46 +49,6 @@ const ReachContextProvider = ({ children }) => {
 	const [contractInstance, setContractInstance] = useState(null)
 	const [proposals, setProposals] = useState([])
 	const [bounties, setBounties] = useState([])
-
-	const [
-		[upVotePromise, setUpVotePromise],
-		[downVotePromise, setDownVotePromise],
-		[contribPromise, setContribPromise],
-		[createPromise, setCreatePromise],
-	] = [
-		useState({
-			resolve: (x = null) => {
-				console.log(x)
-			},
-			reject: (x = null) => {
-				console.log(x)
-			},
-		}),
-		useState({
-			resolve: (x = null) => {
-				console.log(x)
-			},
-			reject: (x = null) => {
-				console.log(x)
-			},
-		}),
-		useState({
-			resolve: (x = null) => {
-				console.log(x)
-			},
-			reject: (x = null) => {
-				console.log(x)
-			},
-		}),
-		useState({
-			resolve: (x = null) => {
-				console.log(x)
-			},
-			reject: (x = null) => {
-				console.log(x)
-			},
-		}),
-	]
 
 	const [[showPreloader, setShowPreloader], [processing, setProcessing]] = [
 		useState(false),
@@ -214,11 +180,10 @@ const ReachContextProvider = ({ children }) => {
 
 	const connectAndUpvote = async (id, ctcInfoStr) => {
 		await new Promise(async (resolve, reject) => {
+			upVotePromise['resolve'] = resolve
+			upVotePromise['reject'] = reject
+			setShowPreloader(true)
 			setProcessing(true)
-			setUpVotePromise({
-				resolve,
-				reject,
-			})
 			try {
 				const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr))
 				const upvotes = await ctc.apis.Voters.upvote()
@@ -235,10 +200,10 @@ const ReachContextProvider = ({ children }) => {
 
 	const connectAndDownvote = async (id, ctcInfoStr) => {
 		await new Promise(async (resolve, reject) => {
-			setDownVotePromise({
-				resolve,
-				reject,
-			})
+			downVotePromise['resolve'] = resolve
+			downVotePromise['reject'] = reject
+			setShowPreloader(true)
+			setProcessing(true)
 			try {
 				const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr))
 				const downvotes = await ctc.apis.Voters.downvote()
@@ -250,14 +215,15 @@ const ReachContextProvider = ({ children }) => {
 		}).catch(async () => {
 			await reevaluate(proposals.filter((el) => el?.id === id)[0])
 		})
+		setShowPreloader(false)
 	}
 
 	const makeContribution = async (amount, id, ctcInfoStr) => {
 		await new Promise(async (resolve, reject) => {
-			setContribPromise({
-				resolve,
-				reject,
-			})
+			contribPromise['resolve'] = resolve
+			contribPromise['reject'] = reject
+			setShowPreloader(true)
+			setProcessing(true)
 			try {
 				const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr))
 				const contribs = await ctc.apis.Voters.contribute(
@@ -271,29 +237,43 @@ const ReachContextProvider = ({ children }) => {
 		}).catch(async () => {
 			await reevaluate(proposals.filter((el) => el?.id === id)[0])
 		})
+		setShowPreloader(false)
 	}
 
 	const connectAndClaimRefund = async (id, ctcInfoStr) => {
-		try {
-			const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr))
-			const result = await ctc.apis.Voters.claimRefund()
-			if (result.didRefund) {
-				const conProposals = proposals.map((el) => {
-					if (Number(el.id) === Number(id)) {
-						el['contribs'] = reach.formatCurrency(result.balance, 4)
-					}
-					return el
-				})
-				setProposals((proposals) => [...conProposals])
-				alert('Refund Success')
-			} else {
-				alert(
-					"It seems you don't have funds to claim, did you contribute to this proposal?"
-				)
+		await new Promise(async (resolve, reject) => {
+			claimPromise['resolve'] = resolve
+			claimPromise['reject'] = reject
+			setShowPreloader(true)
+			setProcessing(true)
+			try {
+				const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr))
+				const result = await ctc.apis.Voters.claimRefund()
+				if (result.didRefund) {
+					const conProposals = proposals.map((el) => {
+						if (Number(el.id) === Number(id)) {
+							el['contribs'] = reach.formatCurrency(result.balance, 4)
+						}
+						return el
+					})
+					setProposals((proposals) => [...conProposals])
+					claimPromise.resolve('Refund Success')
+				} else {
+					claimPromise.reject(
+						"It seems you don't have funds to claim, did you contribute to this proposal?"
+					)
+				}
+			} catch (error) {
+				console.log({ error })
 			}
-		} catch (error) {
-			console.log({ error })
-		}
+		})
+			.then((message) => {
+				alert(message)
+			})
+			.catch((message) => {
+				alert(message)
+			})
+		setShowPreloader(false)
 	}
 
 	const DeployerInteract = {
@@ -346,7 +326,7 @@ const ReachContextProvider = ({ children }) => {
 			})
 			setProposals((proposals) => [...currentProposals])
 			createPromise.resolve()
-			alert('Success')
+			console.log('Success')
 			console.log(JSON.stringify(what[5]), parseInt(what[6]))
 		} catch (e) {
 			createPromise.reject(
@@ -481,29 +461,20 @@ const ReachContextProvider = ({ children }) => {
 				ctc.events.log.monitor(timeoutProposal)
 				ctc.events.created.monitor(updateProposals)
 			} catch (error) {
-				createPromise.reject()
+				createPromise.reject(error)
 			}
 		}
 		await new Promise(async (resolve, reject) => {
-			setCreatePromise({
-				resolve,
-				reject,
-			})
+			createPromise['resolve'] = resolve
+			createPromise['reject'] = reject
 			setShowPreloader(true)
 			setProcessing(true)
 			await proposalSetup()
+		}).catch((message) => {
+			console.log(message)
 		})
-			.then(() => {
-				setShowPreloader(false)
-				setProcessing(false)
-				setViews({ view: 'Proposals', wrapper: 'ProposalWrapper' })
-			})
-			.catch((message) => {
-				alert(message)
-				setShowPreloader(false)
-				setProcessing(false)
-				setViews({ view: 'Proposals', wrapper: 'ProposalWrapper' })
-			})
+		setViews({ view: 'Proposals', wrapper: 'ProposalWrapper' })
+		setShowPreloader(false)
 
 		// setProcessing(false)
 	}
