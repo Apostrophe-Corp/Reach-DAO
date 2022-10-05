@@ -44,7 +44,6 @@ const MakeProposal = () => {
         };
 
         await makeProposal(proposal);
-        setViews({ view: "Proposals", wrapper: "ProposalWrapper" });
     };
 
     return (

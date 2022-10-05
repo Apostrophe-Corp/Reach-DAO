@@ -162,7 +162,7 @@ const Proposals = () => {
                                     styles.actionButton,
                                 ) }
                                 onClick={ () => {
-                                    connectAndClaimRefund(el.contract);
+                                    connectAndClaimRefund(el.id, el.contract);
                                 } }
                             >Reclaim Funds</button>
                         </div>
