@@ -27,7 +27,7 @@ let [
 	createPromise,
 ] = [{}, {}, {}, {}, {}]
 const { standardUnit } = reach
-const deadline = { ETH: 5, ALGO: 50, CFX: 500 }[reach.connector]
+const deadline = { ETH: 7, ALGO: 70, CFX: 700 }[reach.connector]
 
 export const ReachContext = React.createContext()
 
@@ -112,8 +112,8 @@ const ReachContextProvider = ({ children }) => {
 	const reevaluate = async ({
 		id,
 		blockCreated,
-		upvotes,
-		downvotes,
+		upVotes,
+		downVotes,
 		contribs,
 	}) => {
 		console.log('Beginning re-evaluation...')
@@ -122,7 +122,7 @@ const ReachContextProvider = ({ children }) => {
 				await contractInstance.apis.Voters.checkTime()
 			)
 			if (blockCreated + deadline < currentConsensusTime) {
-				if (upvotes > downvotes) {
+				if (upVotes > downVotes) {
 					const xXProposals = proposals.map((el) => {
 						if (Number(el.id) === Number(parseInt(id))) {
 							el['timedOut'] = true
@@ -139,7 +139,7 @@ const ReachContextProvider = ({ children }) => {
 					setBounties((bounties) => [...cBounties])
 					// await contractInstance.apis.Voters.timedOut(id, 1)
 					alert(
-						'This proposal seems to have missed becoming a bounty, you can now find it on the Bounties List'
+						'Sorry, this proposal seems to have missed becoming a bounty, you can now find it on the Bounties List'
 					)
 				} else if (contribs > 0) {
 					const nProposals = proposals
@@ -153,7 +153,7 @@ const ReachContextProvider = ({ children }) => {
 					setProposals((proposals) => [...fProposals])
 					// await contractInstance.apis.Voters.timedOut(id, 0)
 					alert(
-						'This proposal already failed with funds, you can now find it on the Timed Out Proposals list'
+						'Sorry, this proposal already failed with funds, you can now find it on the Timed Out Proposals list'
 					)
 				} else {
 					const yProposals = proposals
@@ -165,7 +165,9 @@ const ReachContextProvider = ({ children }) => {
 					})
 					setProposals((proposals) => [...remainingProposals])
 					// await contractInstance.apis.Voters.projectDown(id)
-					alert('This appears to be a rogue proposal, and has been taken down')
+					alert(
+						'Sorry, this appears to be a rogue proposal, and has been taken down'
+					)
 				}
 			} else {
 				alert(
@@ -186,8 +188,19 @@ const ReachContextProvider = ({ children }) => {
 			setProcessing(true)
 			try {
 				const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr))
-				const upvotes = await ctc.apis.Voters.upvote()
-				await contractInstance.apis.Voters.upvoted(id, parseInt(upvotes))
+				await ctc.apis.Voters.upvote()
+					.then(async (upVotes) => {
+						await contractInstance.apis.Voters.upvoted(id, parseInt(upVotes))
+							.then(() => {
+								upVotePromise.resolve()
+							})
+							.catch(() => {
+								upVotePromise.reject()
+							})
+					})
+					.catch(() => {
+						upVotePromise.reject()
+					})
 			} catch (error) {
 				console.log({ error })
 				upVotePromise.reject()
@@ -206,8 +219,22 @@ const ReachContextProvider = ({ children }) => {
 			setProcessing(true)
 			try {
 				const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr))
-				const downvotes = await ctc.apis.Voters.downvote()
-				await contractInstance.apis.Voters.downvoted(id, parseInt(downvotes))
+				await ctc.apis.Voters.downvote()
+					.then(async (downVotes) => {
+						await contractInstance.apis.Voters.downvoted(
+							id,
+							parseInt(downVotes)
+						)
+							.then(() => {
+								downVotePromise.resolve()
+							})
+							.catch(() => {
+								downVotePromise.reject()
+							})
+					})
+					.catch(() => {
+						downVotePromise.reject()
+					})
 			} catch (error) {
 				console.log({ error })
 				downVotePromise.reject()
@@ -226,10 +253,22 @@ const ReachContextProvider = ({ children }) => {
 			setProcessing(true)
 			try {
 				const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr))
-				const contribs = await ctc.apis.Voters.contribute(
-					reach.parseCurrency(amount)
-				)
-				await contractInstance.apis.Voters.contributed(id, parseInt(contribs))
+				await ctc.apis.Voters.contribute(reach.parseCurrency(amount))
+					.then(async (contribs) => {
+						await contractInstance.apis.Voters.contributed(
+							id,
+							parseInt(contribs)
+						)
+							.then(() => {
+								contribPromise.resolve()
+							})
+							.catch(() => {
+								contribPromise.reject()
+							})
+					})
+					.catch(() => {
+						contribPromise.reject()
+					})
 			} catch (error) {
 				console.log({ error })
 				contribPromise.reject()
@@ -248,23 +287,30 @@ const ReachContextProvider = ({ children }) => {
 			setProcessing(true)
 			try {
 				const ctc = user.account.contract(backend, JSON.parse(ctcInfoStr))
-				const result = await ctc.apis.Voters.claimRefund()
-				if (result.didRefund) {
-					const conProposals = proposals.map((el) => {
-						if (Number(el.id) === Number(id)) {
-							el['contribs'] = reach.formatCurrency(result.balance, 4)
+				await ctc.apis.Voters.claimRefund()
+					.then((result) => {
+						if (result.didRefund) {
+							const conProposals = proposals.map((el) => {
+								if (Number(el.id) === Number(id)) {
+									el['contribs'] = reach.formatCurrency(result.balance, 4)
+								}
+								return el
+							})
+							setProposals((proposals) => [...conProposals])
+							claimPromise.resolve('Refund Success')
+						} else {
+							claimPromise.reject(
+								"It seems you don't have funds to claim, did you contribute to this proposal?"
+							)
 						}
-						return el
 					})
-					setProposals((proposals) => [...conProposals])
-					claimPromise.resolve('Refund Success')
-				} else {
-					claimPromise.reject(
-						"It seems you don't have funds to claim, did you contribute to this proposal?"
-					)
-				}
+					.catch(() => {
+						claimPromise.reject()
+					})
 			} catch (error) {
+				alert('Failed to lay claims')
 				console.log({ error })
+				claimPromise.reject()
 			}
 		})
 			.then((message) => {
@@ -302,7 +348,7 @@ const ReachContextProvider = ({ children }) => {
 			console.log(what[5])
 		} catch (e) {
 			console.log(e)
-			createPromise.reject('Unable to send proposal to Reach DAO')
+			createPromise?.reject && createPromise.reject('Unable to send proposal to Reach DAO')
 		}
 	}
 
@@ -317,19 +363,19 @@ const ReachContextProvider = ({ children }) => {
 				owner: noneNull(what[4]),
 				contract: JSON.stringify(what[5]),
 				blockCreated: parseInt(what[6]),
-				upvotes: 0,
-				downvotes: 0,
+				upVotes: 0,
+				downVotes: 0,
 				contribs: 0,
 				timedOut: false,
 				didPass: false,
 				isDown: false,
 			})
 			setProposals((proposals) => [...currentProposals])
-			createPromise.resolve()
+			createPromise?.resolve && createPromise.resolve()
 			console.log('Success')
 			console.log(JSON.stringify(what[5]), parseInt(what[6]))
 		} catch (e) {
-			createPromise.reject(
+			createPromise?.reject && createPromise.reject(
 				'Proposal has being created, but unable to update proposal list'
 			)
 		}
@@ -341,22 +387,22 @@ const ReachContextProvider = ({ children }) => {
 			case ifState('upvoted'):
 				const upProposals = proposals.map((el) => {
 					if (Number(el.id) === Number(parseInt(what[1]))) {
-						el['upvotes'] = parseInt(what[2])
+						el['upVotes'] = parseInt(what[2])
 					}
 					return el
 				})
 				setProposals((proposals) => [...upProposals])
-				upVotePromise.resolve()
+				upVotePromise?.resolve && upVotePromise.resolve()
 				break
 			case ifState('downvoted'):
 				const downProposals = proposals.map((el) => {
 					if (Number(el.id) === Number(parseInt(what[1]))) {
-						el['downvotes'] = parseInt(what[2])
+						el['downVotes'] = parseInt(what[2])
 					}
 					return el
 				})
 				setProposals((proposals) => [...downProposals])
-				downVotePromise.resolve()
+				downVotePromise?.resolve && downVotePromise.resolve()
 				break
 			case ifState('contributed'):
 				const conProposals = proposals.map((el) => {
@@ -366,7 +412,7 @@ const ReachContextProvider = ({ children }) => {
 					return el
 				})
 				setProposals((proposals) => [...conProposals])
-				contribPromise.resolve()
+				contribPromise?.resolve && contribPromise.resolve()
 				break
 			case ifState('timedOut'):
 				// Take it to the Bounties view, drop from the proposal view
@@ -439,7 +485,15 @@ const ReachContextProvider = ({ children }) => {
 			...DeployerInteract,
 		}
 		ctc.p.Deployer(interact)
-		const ctcInfoStr = JSON.stringify(await ctc.getInfo(), null, 2)
+		const ctcInfoStr = JSON.stringify(
+			await ctc.getInfo().catch(() => {
+				console.log('Unable to deploy')
+				setViews({ view: 'Deploy', wrapper: 'DeployerWrapper' })
+				return null
+			}),
+			null,
+			2
+		)
 		ctc.events.create.monitor(createProposal)
 		ctc.events.that.monitor(acknowledge)
 		setContract({ ctcInfoStr })
@@ -475,8 +529,6 @@ const ReachContextProvider = ({ children }) => {
 		})
 		setViews({ view: 'Proposals', wrapper: 'ProposalWrapper' })
 		setShowPreloader(false)
-
-		// setProcessing(false)
 	}
 
 	const ReachContextValues = {

@@ -3,9 +3,9 @@ import { useReach, fmtClasses } from '../../hooks'
 import styles from '../../styles/Preloader.module.css'
 
 const Preloader = () => {
-	const { sleep, showPreloader, setProcessing } = useReach()
+	const { sleep, showPreloader, setShowPreloader, setProcessing } = useReach()
 	const [preloaderClass, setPreloaderClass] = useState(
-		fmtClasses(styles.container)
+		fmtClasses(styles.container, styles.invisible)
 	)
 
 	useEffect(() => {
@@ -14,26 +14,32 @@ const Preloader = () => {
 
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	useEffect(() => {
-		const fadeOff = () => {
-			sleep(3000).then(() => {
+		const close = async () => {
+			const fadeOff = async () => {
 				setPreloaderClass(fmtClasses(styles.container, styles.invisible))
-				sleep(400).then(() => {
-					setPreloaderClass(
-						fmtClasses(styles.container, styles.invisible, styles.terminated)
-					)
-				})
-			})
+				await sleep(400)
+				setPreloaderClass(
+					fmtClasses(styles.container, styles.invisible, styles.terminated)
+				)
+			}
+			if (showPreloader === false) {
+				await fadeOff()
+				setProcessing(false)
+			}
 		}
-		if (showPreloader === false) {
-			console.log('Fading out')
-			fadeOff()
-			setProcessing(false)
-			console.log('Fading should be completed now')
-		}
+		close()
 	}, [showPreloader])
 
 	return (
 		<div className={preloaderClass}>
+			<div
+				className={fmtClasses(styles.closeBtn)}
+				onClick={() => {
+					setShowPreloader(false)
+				}}
+			>
+				Close
+			</div>
 			<div className={fmtClasses(styles.circle, styles.c1)}></div>
 			<div className={fmtClasses(styles.circle, styles.c2)}></div>
 			<div className={fmtClasses(styles.circle, styles.c3)}></div>

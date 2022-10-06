@@ -97,7 +97,7 @@ const Proposals = () => {
                                 ) } /><span className={ fmtClasses(
                                     proposal.dInlineBlock
                                 ) }
-                                >{ el.upvotes ?? 0 }</span>
+                                >{ el.upVotes ?? 0 }</span>
                         </div>
                         <div onClick={ () => {
                             setShowContrib(!showContrib);
@@ -134,7 +134,7 @@ const Proposals = () => {
                                 ) } /><span className={ fmtClasses(
                                     proposal.dInlineBlock
                                 ) }
-                                >{ el.downvotes ?? 0 }</span>
+                                >{ el.downVotes ?? 0 }</span>
                         </div>
                     </div>
                     :
