@@ -10,6 +10,8 @@ import styles from '../styles/MainWrapper.module.css'
 import styled from '../styles/SubWrapper.module.css'
 import style from '../styles/Shared.module.css'
 import { Preloader } from '../components/Preloader'
+import icon from './../assets/images/interlinked.jpg'
+import { Alert } from '../components/Alert'
 
 const reach = loadStdlib(process.env)
 
@@ -19,13 +21,13 @@ reach.setWalletFallback(
 		WalletConnect,
 	})
 )
-let [
-	upVotePromise,
-	downVotePromise,
-	contribPromise,
-	claimPromise,
-	createPromise,
-] = [{}, {}, {}, {}, {}]
+
+let [upVotePromise, downVotePromise, contribPromise, createPromise] = [
+	{},
+	{},
+	{},
+	{},
+]
 const { standardUnit } = reach
 const deadline = { ETH: 7, ALGO: 70, CFX: 700 }[reach.connector]
 
@@ -55,6 +57,12 @@ const ReachContextProvider = ({ children }) => {
 		useState(false),
 	]
 
+	const [
+		[message, setMessage],
+		[alertResolve, setAlertResolve],
+		[showAlert, setShowAlert],
+	] = [useState(''), useState({}), useState(false)]
+
 	/**
 	 * It should return the bare string value without null characters
 	 * @param {String} byte A string padded with null values
@@ -69,6 +77,26 @@ const ReachContextProvider = ({ children }) => {
 			}
 		}
 		return string
+	}
+
+	const alertThis = (message) => {
+		const sleep = (milliseconds) =>
+			new Promise((resolve) => {
+				setAlertResolve((lastResolve) => ({ resolve }))
+				return setTimeout(
+					resolve,
+					milliseconds / 1000 > 10 ? 10000 : milliseconds / 1000 < 3 ? 3000 : 0
+				)
+			})
+		setMessage((lastMessage) => message)
+		setShowAlert((lastState) => true)
+		sleep(message.length * 300).then(() => {
+			setShowAlert((lastState) => false)			
+		})
+	}
+
+	const hideAlert = () => {
+		alertResolve.resolve()
 	}
 
 	const sleep = (milSecs) =>
@@ -138,7 +166,7 @@ const ReachContextProvider = ({ children }) => {
 					cBounties.push(nBounty)
 					setBounties((bounties) => [...cBounties])
 					// await contractInstance.apis.Voters.timedOut(id, 1)
-					alert(
+					alertThis(
 						'Sorry, this proposal seems to have missed becoming a bounty, you can now find it on the Bounties List'
 					)
 				} else if (contribs > 0) {
@@ -152,7 +180,7 @@ const ReachContextProvider = ({ children }) => {
 					})
 					setProposals((proposals) => [...fProposals])
 					// await contractInstance.apis.Voters.timedOut(id, 0)
-					alert(
+					alertThis(
 						'Sorry, this proposal already failed with funds, you can now find it on the Timed Out Proposals list'
 					)
 				} else {
@@ -165,19 +193,53 @@ const ReachContextProvider = ({ children }) => {
 					})
 					setProposals((proposals) => [...remainingProposals])
 					// await contractInstance.apis.Voters.projectDown(id)
-					alert(
+					alertThis(
 						'Sorry, this appears to be a rogue proposal, and has been taken down'
 					)
 				}
 			} else {
-				alert(
+				alertThis(
 					'Evaluation failed, please contact Reach DAO technical team on Discord',
 					false
 				)
 			}
 		} catch (error) {
-			alert('Unable to reevaluate proposal', false)
+			alertThis('Unable to reevaluate proposal', false)
 		}
+	}
+
+	const makeProposal = async (proposal) => {
+		const proposalSetup = async () => {
+			try {
+				const ctc = user.account.contract(backend)
+				ctc.p.Deployer({
+					getProposal: {
+						...proposal,
+						deadline: deadline,
+						isProposal: true,
+					},
+				})
+				ctc.events.log.monitor(timeoutProposal)
+				ctc.events.created.monitor(updateProposals)
+			} catch (error) {
+				createPromise.reject(error)
+			}
+		}
+		await new Promise(async (resolve, reject) => {
+			createPromise['resolve'] = resolve
+			createPromise['reject'] = reject
+			setShowPreloader(true)
+			setProcessing(true)
+			await proposalSetup()
+		})
+			.then(() => {
+				alertThis('Success!')
+			})
+			.catch((message) => {
+				console.log(message)
+			})
+		setViews({ view: 'Proposals', wrapper: 'ProposalWrapper' })
+		setShowPreloader(false)
 	}
 
 	const connectAndUpvote = async (id, ctcInfoStr) => {
@@ -205,6 +267,8 @@ const ReachContextProvider = ({ children }) => {
 				console.log({ error })
 				upVotePromise.reject()
 			}
+		}).then(() => {
+			alertThis('Success!')
 		}).catch(async () => {
 			await reevaluate(proposals.filter((el) => el?.id === id)[0])
 		})
@@ -239,6 +303,8 @@ const ReachContextProvider = ({ children }) => {
 				console.log({ error })
 				downVotePromise.reject()
 			}
+		}).then(() => {
+			alertThis('Success!')
 		}).catch(async () => {
 			await reevaluate(proposals.filter((el) => el?.id === id)[0])
 		})
@@ -273,6 +339,8 @@ const ReachContextProvider = ({ children }) => {
 				console.log({ error })
 				contribPromise.reject()
 			}
+		}).then(() => {
+			alertThis('Success!')
 		}).catch(async () => {
 			await reevaluate(proposals.filter((el) => el?.id === id)[0])
 		})
@@ -280,6 +348,7 @@ const ReachContextProvider = ({ children }) => {
 	}
 
 	const connectAndClaimRefund = async (id, ctcInfoStr) => {
+		const claimPromise = {}
 		await new Promise(async (resolve, reject) => {
 			claimPromise['resolve'] = resolve
 			claimPromise['reject'] = reject
@@ -297,7 +366,7 @@ const ReachContextProvider = ({ children }) => {
 								return el
 							})
 							setProposals((proposals) => [...conProposals])
-							claimPromise.resolve('Refund Success')
+							claimPromise.resolve('Refund Successful!')
 						} else {
 							claimPromise.reject(
 								"It seems you don't have funds to claim, did you contribute to this proposal?"
@@ -308,30 +377,18 @@ const ReachContextProvider = ({ children }) => {
 						claimPromise.reject()
 					})
 			} catch (error) {
-				alert('Failed to lay claims')
+				alertThis('Failed to lay claims')
 				console.log({ error })
 				claimPromise.reject()
 			}
 		})
 			.then((message) => {
-				alert(message)
+				alertThis(message)
 			})
 			.catch((message) => {
-				alert(message)
+				alertThis(message)
 			})
 		setShowPreloader(false)
-	}
-
-	const DeployerInteract = {
-		getProposal: {
-			id: 1,
-			title: 'AroTable',
-			link: 'https://github.com/Aro1914/AroTable/blob/main/README.md',
-			description: `A self-sorting number data structure`,
-			owner: user.account,
-			deadline: 0,
-			isProposal: false,
-		},
 	}
 
 	const updateProposals = async ({ when, what }) => {
@@ -348,7 +405,8 @@ const ReachContextProvider = ({ children }) => {
 			console.log(what[5])
 		} catch (e) {
 			console.log(e)
-			createPromise?.reject && createPromise.reject('Unable to send proposal to Reach DAO')
+			createPromise?.reject &&
+				createPromise.reject('Unable to send proposal to Reach DAO')
 		}
 	}
 
@@ -375,9 +433,10 @@ const ReachContextProvider = ({ children }) => {
 			console.log('Success')
 			console.log(JSON.stringify(what[5]), parseInt(what[6]))
 		} catch (e) {
-			createPromise?.reject && createPromise.reject(
-				'Proposal has being created, but unable to update proposal list'
-			)
+			createPromise?.reject &&
+				createPromise.reject(
+					'Proposal has being created, but unable to update proposal list'
+				)
 		}
 	}
 
@@ -476,58 +535,49 @@ const ReachContextProvider = ({ children }) => {
 		}
 	}
 
-	const deploy = async () => {
-		setViews({ view: 'Deploying', wrapper: 'DeployerWrapper' })
-		const ctc = user.account.contract(backend)
-		setContractInstance(ctc)
-		console.log('Got here')
-		const interact = {
-			...DeployerInteract,
-		}
-		ctc.p.Deployer(interact)
-		const ctcInfoStr = JSON.stringify(
-			await ctc.getInfo().catch(() => {
-				console.log('Unable to deploy')
-				setViews({ view: 'Deploy', wrapper: 'DeployerWrapper' })
-				return null
-			}),
-			null,
-			2
-		)
-		ctc.events.create.monitor(createProposal)
-		ctc.events.that.monitor(acknowledge)
-		setContract({ ctcInfoStr })
-		console.log(ctcInfoStr)
-		setViews({ view: 'Deployed', wrapper: 'DeployerWrapper' })
+	const DeployerInteract = {
+		getProposal: {
+			id: 1,
+			title: 'AroTable',
+			link: 'https://github.com/Apostrophe-Corp/Reach-DAO/blob/main/README.md',
+			description: `A hub for Web3 Developers`,
+			owner: user?.account?.networkAccount?.addr,
+			deadline: 0,
+			isProposal: false,
+		},
 	}
 
-	const makeProposal = async (proposal) => {
-		const proposalSetup = async () => {
-			try {
-				const ctc = user.account.contract(backend)
-				ctc.p.Deployer({
-					getProposal: {
-						...proposal,
-						deadline: deadline,
-						isProposal: true,
-					},
-				})
-				ctc.events.log.monitor(timeoutProposal)
-				ctc.events.created.monitor(updateProposals)
-			} catch (error) {
-				createPromise.reject(error)
-			}
-		}
+	const deploy = async () => {
+		const deployPromise = {}
 		await new Promise(async (resolve, reject) => {
-			createPromise['resolve'] = resolve
-			createPromise['reject'] = reject
+			deployPromise['resolve'] = resolve
+			deployPromise['reject'] = reject
 			setShowPreloader(true)
 			setProcessing(true)
-			await proposalSetup()
-		}).catch((message) => {
-			console.log(message)
+			try {
+				const ctc = user.account.contract(backend)
+				setContractInstance(ctc)
+				console.log('Got here')
+				const interact = {
+					...DeployerInteract,
+				}
+				ctc.p.Deployer(interact)
+				await ctc.getInfo().then((infoStr) => {
+					const ctcInfoStr = JSON.stringify(infoStr, null, 2)
+					ctc.events.create.monitor(createProposal)
+					ctc.events.that.monitor(acknowledge)
+					setContract({ ctcInfoStr })
+					console.log(ctcInfoStr)
+					setViews({ view: 'Deployed', wrapper: 'DeployerWrapper' })
+					deployPromise.resolve()
+				})
+			} catch (error) {
+				deployPromise.reject(error)
+			}
+		}).catch((error) => {
+			console.log('Unable to deploy', { error })
+			setViews({ view: 'Deploy', wrapper: 'DeployerWrapper' })
 		})
-		setViews({ view: 'Proposals', wrapper: 'ProposalWrapper' })
 		setShowPreloader(false)
 	}
 
@@ -566,6 +616,13 @@ const ReachContextProvider = ({ children }) => {
 		processing,
 		setProcessing,
 
+		// Alert States
+		message,
+		setMessage,
+		showAlert,
+		hideAlert,
+		alertThis,
+
 		// API
 		// connectAndContribute,
 		setContract,
@@ -586,6 +643,14 @@ const ReachContextProvider = ({ children }) => {
 	return (
 		<ReachContext.Provider value={ReachContextValues}>
 			<Helmet>
+				<link
+					rel='icon'
+					href={icon}
+				/>
+				<link
+					rel='apple-touch-icon'
+					href={icon}
+				/>
 				<meta
 					name='viewport'
 					content='width=device-width, initial-scale=1.0'
@@ -697,6 +762,7 @@ const ReachContextProvider = ({ children }) => {
 				</div>
 			)}
 			{processing && <Preloader />}
+			<Alert />
 			<div
 				className={fmtClasses(styles.childrenContainer)}
 				id='root'
@@ -719,7 +785,7 @@ const ReachContextProvider = ({ children }) => {
 						style.tCenter
 					)}
 				>
-					&copy; Team 18, 2022.
+					&copy; Apostrophe Corp, 2022.
 				</span>
 			</div>
 		</ReachContext.Provider>

@@ -28,7 +28,7 @@ const Preloader = () => {
 			}
 		}
 		close()
-	}, [showPreloader])
+	}, [setProcessing, showPreloader, sleep])
 
 	return (
 		<div className={preloaderClass}>
