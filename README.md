@@ -1,6 +1,6 @@
 # Reach DAO
 
-This project was created for the decentralized Umoja3 Bounty hack, organized by [Reach](https://bit.ly/3GJm5ep), the African Blockchain Alliance and Algorand.
+This project was created for the Greenhouse hack 2, organized by [Algorand](https://www.algorand.com/) and hosted on Gitcoin.
 
 The DApp allows any user to create a proposal for other users to contribute to and vote on. If the proposal passes, it becomes a bounty funded by the contributions as well as funds raised from sponsors. If the proposal does not pass, all users who contributed can claim a refund on the amounts that each of them contributed.  
 
@@ -113,8 +113,6 @@ sudo service docker start
 
 Should you encounter any other errors, please tag either `goonerlabs#1008` 0r `Emmanuel Agbavwe#2954` in the help channel of the [Reach Discord Server](https://bit.ly/3BnPyKd).  
 
-And the rest of the awesome team at Reach, The African Blockchain Alliance and The Algorand Foundation.
-
 ## The DApp
 
 ### The Landing page
@@ -138,7 +136,7 @@ And the rest of the awesome team at Reach, The African Blockchain Alliance and T
 
 - [JP Miller](https://github.com/TheChronicMonster)
 - [Nick Stanford](https://github.com/nstanford5)
-- Melvin Wafula  
+- And the Reach team, the Algorand Foundation and Gitcoin.
 
 ## Contributing
 
