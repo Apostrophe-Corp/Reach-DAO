@@ -140,7 +140,7 @@ Should you encounter any other errors, please tag either `goonerlabs#1008` 0r `E
 
 ## Contributing
 
-This project is open to contributions from great minded developers who share our goal to make development easier, and to bring more developers into Web3 through the [Reach Lang](https://github.com/Aro1914/Reach-Lang) and by building on the Algorand network.  
+This project is open to contributions from like-minded developers who share our goal to make development easier, and to bring more developers into Web3 through the [Reach Lang](https://github.com/Aro1914/Reach-Lang) and by building on the Algorand network.  
 
 To contribute, simply:
 
